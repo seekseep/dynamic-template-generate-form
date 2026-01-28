@@ -201,3 +201,101 @@ textarea#jsonTextarea {
 .json-error-icon {
   margin-right: 8px;
 }
+
+/* ビジュアルエディター */
+.visual-editor-container {
+  overflow-y: auto;
+  height: 100%;
+}
+
+.visual-editor-section {
+  margin-bottom: 20px;
+}
+
+.visual-editor-section h6 {
+  color: #333;
+  font-weight: 600;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 8px;
+}
+
+/* フォームビルダー */
+.form-builder {
+  padding: 15px 0;
+}
+
+.form-builder-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-builder-section {
+  border: 1px solid #dee2e6;
+}
+
+.form-builder-section .card-header {
+  background-color: #f8f9fa;
+}
+
+.form-builder-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-builder-field-group {
+  border: 1px solid #dee2e6;
+  background-color: #fafbfc !important;
+}
+
+.form-builder-field-item {
+  border: 1px solid #dee2e6;
+  padding: 12px !important;
+  background-color: #ffffff;
+  border-radius: 4px;
+}
+
+.form-builder-field-item label {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.form-builder-field-item input[type="text"],
+.form-builder-field-item input[type="email"],
+.form-builder-field-item input[type="tel"],
+.form-builder-field-item select,
+.form-builder-field-item textarea {
+  margin-bottom: 8px;
+}
+
+/* テンプレートビルダー */
+.template-builder {
+  padding: 15px 0;
+}
+
+.template-builder-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.template-builder-section {
+  border: 1px solid #dee2e6;
+}
+
+.template-builder-section .card-header {
+  background-color: #f8f9fa;
+}
+
+.template-builder-section textarea {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* スクロール対応 */
+.visual-editor-container {
+  display: flex;
+  flex-direction: column;
+}
