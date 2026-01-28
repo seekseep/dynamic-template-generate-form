@@ -7,7 +7,7 @@ const STORAGE_KEYS = {
 
 /**
  * 設定全体を localStorage から読み込む
- * @returns {Object} config - { form: {...}, template: {...} }
+ * @returns {Object} config - { form: {...}, templates: [...] }
  */
 function loadConfig() {
   try {
@@ -21,7 +21,7 @@ function loadConfig() {
 
 /**
  * 設定全体を localStorage に保存
- * @param {Object} config - { form: {...}, template: {...} }
+ * @param {Object} config - { form: {...}, templates: [...] }
  */
 function saveConfig(config) {
   try {
@@ -60,7 +60,7 @@ function exportConfig(config) {
 /**
  * JSON ファイルから設定をインポート
  * @param {File} file - インポートするファイル
- * @returns {Promise<Object>} パースされた設定 { form: {...}, template: {...} }
+ * @returns {Promise<Object>} パースされた設定 { form: {...}, templates: [...] }
  */
 function importConfig(file) {
   return new Promise((resolve, reject) => {
@@ -68,12 +68,17 @@ function importConfig(file) {
     reader.onload = (e) => {
       try {
         const config = JSON.parse(e.target.result);
-        // form と template の両方を持つか確認
-        if (config.form && config.template) {
+        // form と templates の両方を持つか確認（後方互換性: template も認可）
+        if (config.form && (config.templates || config.template)) {
+          // 旧フォーマットの template を templates に変換
+          if (config.template && !config.templates) {
+            config.templates = [config.template];
+            delete config.template;
+          }
           saveConfig(config);
           resolve(config);
         } else {
-          reject(new Error('Invalid config format: missing form or template'));
+          reject(new Error('Invalid config format: missing form or templates'));
         }
       } catch (error) {
         reject(error);

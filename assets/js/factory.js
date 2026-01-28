@@ -82,6 +82,7 @@ function createDynamicForm (value) {
 
 function createDynamicTemplate (value) {
   return {
+    label: value.label || '',
     sections: (value.sections || []).map(createDynamicTemplateSection)
   }
 }
@@ -93,4 +94,8 @@ function createDynamicTemplateSection (value) {
     condition: createDynamicFormCondition(value.condition),
     content: value.content || ''
   }
+}
+
+function createDynamicTemplates (values) {
+  return (values || []).map(createDynamicTemplate)
 }

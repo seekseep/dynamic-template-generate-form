@@ -121,28 +121,71 @@
       }
     ]
   },
-  "template": {
-    "sections": [
-      {
-        "label": "基本情報",
-        "condition": null,
-        "content": "【基本情報】\n優先度: {{ticket_priority}}\nお名前: {{name}}\nメールアドレス: {{email}}\n"
-      },
-      {
-        "label": "問題の詳細",
-        "condition": null,
-        "content": "【問題の詳細】\n関連製品/サービス: {{product}}\n問題の種類: {{issue_type}}\n件名: {{subject}}\n説明:\n{{description}}\n"
-      },
-      {
-        "label": "追加情報",
-        "condition": null,
-        "content": "【追加情報】\n影響を受けた機能: {{affected_features}}\n環境: {{environment}}\n再現手順:\n{{steps_to_reproduce}}\n"
-      },
-      {
-        "label": "連絡先情報",
-        "condition": null,
-        "content": "【連絡先情報】\nご希望の連絡方法: {{contact_method}}\n電話番号: {{phone}}\n"
-      }
-    ]
-  }
+  "templates": [
+    {
+      "label": "標準テンプレート",
+      "sections": [
+        {
+          "label": "基本情報",
+          "condition": null,
+          "content": "【基本情報】\n優先度: {{優先度}}\nお名前: {{お名前}}\nメールアドレス: {{メールアドレス}}\n"
+        },
+        {
+          "label": "問題の詳細",
+          "condition": null,
+          "content": "【問題の詳細】\n関連製品/サービス: {{関連する製品/サービス}}\n問題の種類: {{問題の種類}}\n件名: {{件名}}\n説明:\n{{問題の説明}}\n"
+        },
+        {
+          "label": "追加情報",
+          "condition": null,
+          "content": "【追加情報】\n影響を受けた機能: {{影響を受けた機能}}\n環境: {{環境}}\n再現手順:\n{{再現手順}}\n"
+        },
+        {
+          "label": "連絡先情報",
+          "condition": null,
+          "content": "【連絡先情報】\nご希望の連絡方法: {{ご希望の連絡方法}}\n電話番号: {{電話番号}}\n"
+        }
+      ]
+    },
+    {
+      "label": "チケット形式",
+      "sections": [
+        {
+          "label": "基本情報",
+          "condition": null,
+          "content": "[チケット]\n優先度: {{優先度}}\n報告者: {{お名前}} ({{メールアドレス}})\n"
+        },
+        {
+          "label": "問題の詳細",
+          "condition": null,
+          "content": "\n[問題]\n製品: {{関連する製品/サービス}}\nタイプ: {{問題の種類}}\nタイトル: {{件名}}\n説明:\n{{問題の説明}}\n"
+        },
+        {
+          "label": "追加情報",
+          "condition": null,
+          "content": "\n[技術情報]\n影響機能: {{影響を受けた機能}}\n環境: {{環境}}\n再現手順: {{再現手順}}\n"
+        },
+        {
+          "label": "連絡先情報",
+          "condition": null,
+          "content": "\n[連絡先]\n連絡方法: {{ご希望の連絡方法}}\n電話: {{電話番号}}\n"
+        }
+      ]
+    },
+    {
+      "label": "サマリー版",
+      "sections": [
+        {
+          "label": "基本情報",
+          "condition": null,
+          "content": "優先度: {{優先度}} | 報告者: {{お名前}}\n"
+        },
+        {
+          "label": "問題の詳細",
+          "condition": null,
+          "content": "製品: {{関連する製品/サービス}} / 種類: {{問題の種類}}\n{{件名}}\n"
+        }
+      ]
+    }
+  ]
 }

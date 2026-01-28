@@ -1,390 +1,309 @@
-# 動的フォーム・テンプレート生成仕様書
+# データ構造
 
-このドキュメントは、ChatGPT や Copilot などの AI チャットボットがデータファイル（contact.json, order.json, support.json）を生成するためのシステムプロンプトとして使用します。
+## 設定ファイル
 
----
+```ts
+type Configuration {
+  form: FormConfiguration;
+  templates: TemplateConfiguration[];
+}
 
-## 概要
+type FormConfiguration {
+  sections: FormSection[]
+}
 
-このプロジェクトは、JSON ベースの設定ファイルから動的にフォームとテンプレートを生成するシステムです。
+type FormSection {
+  label: string;
+  condition: Condition | null;
+  fields: (FormField | FormField[])[];
+}
 
-- **Form**: ユーザー入力を受け取るための動的なフォーム定義
-- **Template**: フォーム入力値を特定の形式で表示するためのテンプレート定義
+type FormField {
+  label: string;
+  type: FieldType;
+  name?: string;
+  required: boolean;
+  options?: (string | FieldOption)[];
+}
 
----
+type FieldOption {
+  value: string;
+  label: string;
+}
 
-## データ構造
+type FieldType = 'text' | 'email' | 'tel' | 'number' | 'date' | 'textarea' | 'select' | 'radio' | 'checkbox';
 
-### 最上位構造
+type Condition = {
+  and?: ConditionExpression[];
+} | {
+  or?: ConditionExpression[];
+} | null;
 
-```json
-{
-  "form": { /* フォーム定義 */ },
-  "template": { /* テンプレート定義 */ }
+type ConditionExpression {
+  field: string;
+  value: string | boolean | number;
+}
+
+type TemplateConfiguration {
+  label: string;
+  sections: TemplateSection[]
+}
+
+type TemplateSection {
+  label: string;
+  condition: Condition | null;
+  content: string;
 }
 ```
 
-### Form 構造
+## JSON ファイル例
 
-```typescript
+### contact.json
+
+```json
 {
-  "sections": [
-    {
-      "label": "string",           // セクションの表示名（必須）
-      "name": "string",            // セクションの識別子（任意、labelから自動生成）
-      "condition": null | object,  // 表示条件（任意、nullの場合は常に表示）
-      "fields": [                  // フィールド配列
-        {
-          "label": "string",       // フィールドの表示名（必須）
-          "name": "string",        // フィールドの識別子（任意、labelから自動生成）
-          "type": "string",        // フィールドタイプ（任意、デフォルト: "text"）
-          "required": boolean,     // 必須フラグ（任意、デフォルト: false）
-          "options": [],           // 選択肢配列（任意、selectやradioなどで使用）
-          "condition": null|object // 表示条件（任意）
-        },
-        // または、フィールドの配列で複数フィールドを横並びにできる
-        [
-          { /* field */ },
-          { /* field */ }
+  "form": {
+    "sections": [
+      {
+        "label": "基本情報",
+        "condition": null,
+        "fields": [
+          {
+            "label": "お名前",
+            "type": "text",
+            "required": true
+          },
+          {
+            "label": "メールアドレス",
+            "type": "email",
+            "required": true
+          },
+          {
+            "label": "電話番号",
+            "type": "tel",
+            "required": false
+          }
         ]
+      },
+      {
+        "label": "お問い合わせ内容",
+        "condition": null,
+        "fields": [
+          {
+            "label": "カテゴリー",
+            "type": "select",
+            "required": true,
+            "options": [
+              "-- 選択してください --",
+              "一般的な質問",
+              "技術サポート",
+              "営業に関する質問",
+              "その他"
+            ]
+          },
+          {
+            "label": "件名",
+            "type": "text",
+            "required": true
+          },
+          {
+            "label": "メッセージ",
+            "type": "textarea",
+            "required": true
+          }
+        ]
+      },
+      {
+        "label": "希望する連絡方法",
+        "condition": null,
+        "fields": [
+          {
+            "label": "ご希望の連絡方法",
+            "type": "radio",
+            "required": true,
+            "options": [
+              "メール",
+              "電話",
+              "SMS"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "templates": [
+    {
+      "label": "標準テンプレート",
+      "sections": [
+        {
+          "label": "基本情報",
+          "condition": null,
+          "content": "【基本情報】\nお名前: {{name}}\nメールアドレス: {{email}}\n電話番号: {{phone}}\n"
+        },
+        {
+          "label": "お問い合わせ内容",
+          "condition": null,
+          "content": "【お問い合わせ内容】\nカテゴリー: {{category}}\n件名: {{subject}}\nメッセージ:\n{{message}}\n"
+        },
+        {
+          "label": "希望する連絡方法",
+          "condition": null,
+          "content": "【希望する連絡方法】\nご希望の連絡方法: {{contact_method}}\n"
+        }
+      ]
+    },
+    {
+      "label": "シンプル版",
+      "sections": [
+        {
+          "label": "基本情報",
+          "condition": null,
+          "content": "名前: {{name}}\nメール: {{email}}\n"
+        },
+        {
+          "label": "お問い合わせ内容",
+          "condition": null,
+          "content": "件名: {{subject}}\n内容: {{message}}\n"
+        }
       ]
     }
   ]
 }
 ```
 
-### Template 構造
+## 使用法
 
-```typescript
-{
-  "sections": [
-    {
-      "label": "string",           // セクションの表示名（必須）
-      "name": "string",            // セクションの識別子（任意）
-      "condition": null | object,  // 表示条件（任意）
-      "content": "string"          // テンプレート内容（Handlebars形式）
-    }
-  ]
-}
-```
+### 1. フォーム定義 (Form)
 
----
+フォームは複数の **セクション** で構成されます。各セクションは複数の **フィールド** を含みます。
 
-## フィールドタイプ一覧
+**セクション特性:**
+- `label`: セクションタイトル
+- `condition`: 条件付き表示（null = 常に表示）
+- `fields`: フィールドの配列
 
-| タイプ | 説明 | 例 | options 必須 |
-|-------|------|-----|----------|
-| `text` | テキスト入力 | 名前、件名 | いいえ |
-| `email` | メールアドレス入力 | メール | いいえ |
-| `tel` | 電話番号入力 | 電話 | いいえ |
-| `date` | 日付選択 | 生年月日 | いいえ |
-| `number` | 数値入力 | 数量、年齢 | いいえ |
-| `textarea` | 複数行テキスト | 説明、メッセージ | いいえ |
-| `select` | ドロップダウン選択 | カテゴリー、地域 | **はい** |
-| `radio` | ラジオボタン（単一選択） | 支払い方法、連絡方法 | **はい** |
-| `checkbox` | チェックボックス（複数選択） | 機能フラグ、確認事項 | **はい** |
+**フィールド特性:**
+- `label`: フィールドラベル
+- `type`: 入力タイプ（text, email, select など）
+- `required`: 必須フラグ
+- `name`: フィールド名（省略可 - ラベルから自動生成）
+- `options`: 選択肢（select, radio, checkbox の場合のみ）
 
----
-
-## Options の形式
-
-### パターン1: 文字列配列（シンプル）
-```json
-"options": ["選択肢1", "選択肢2", "選択肢3"]
-```
-この場合、`value` と `label` の両方が選択肢の文字列になります。
-
-### パターン2: オブジェクト配列（詳細）
-```json
-"options": [
-  { "value": "val1", "label": "表示テキスト1" },
-  { "value": "val2", "label": "表示テキスト2" }
-]
-```
-
----
-
-## 条件式（Condition）
-
-### null の場合
-常に表示されます。
-
-### 配列形式（AND 条件）
-複数の条件を全て満たす場合に表示
-```json
-"condition": [
-  { "field": "フィールド名", "value": "条件値" },
-  { "field": "別フィールド名", "value": "別の条件値" }
-]
-```
-
-### and プロパティ
-明示的な AND 条件
-```json
-"condition": {
-  "and": [
-    { "field": "フィールド名", "value": "条件値" }
-  ]
-}
-```
-
-### or プロパティ
-OR 条件（いずれか一つの条件を満たす）
-```json
-"condition": {
-  "or": [
-    { "field": "フィールド名", "value": "条件値A" },
-    { "field": "フィールド名", "value": "条件値B" }
-  ]
-}
-```
-
----
-
-## Template 内容の書き方
-
-Template の `content` は Handlebars 形式を使用します。
-
-### 基本的な変数参照
-```
-{{field_name}}
-```
-
-フォーム内の各フィールドの `name` または `label` に対応した変数を使用します。
-
-### 例
-```
-【基本情報】
-お名前: {{お名前}}
-メールアドレス: {{メールアドレス}}
-電話番号: {{電話番号}}
-```
-
-### ネストされたフィールド
-フィールドが配列で横並びになっている場合、各フィールドは独立した変数になります。
+**フィールド配列レイアウト:**
+複数フィールドを配列で括ると、横並びレイアウトになります：
 
 ```json
 "fields": [
-  [
-    { "label": "郵便番号" },
-    { "label": "住所" }
-  ]
+  {
+    "label": "名前",
+    "type": "text",
+    "required": true
+  },
+  {
+    "label": "メール",
+    "type": "email",
+    "required": true
+  }
 ]
 ```
 
-Template では：
-```
-郵便番号: {{郵便番号}}
-住所: {{住所}}
-```
+### 2. テンプレート定義 (Templates)
 
----
+複数のテンプレートを配列で定義できます。各テンプレートは異なるフォーマットやレイアウトで同じフォームデータを出力できます。
 
-## 3つのテンプレート仕様
+**テンプレート特性:**
+- `label`: テンプレート名（タブ表示に使用）
+- `sections`: セクションの配列
 
-### 1. Contact Form（お問い合わせフォーム）
+**セクション特性:**
+- `label`: セクションタイトル
+- `condition`: 条件付き表示（null = 常に表示）
+- `content`: テンプレートコンテンツ（{{変数名}} で置換）
 
-**用途**: 顧客からの一般的な問い合わせを受け付ける
-
-**セクション構成**:
-1. **基本情報**
-   - お名前（text, 必須）
-   - メールアドレス（email, 必須）
-   - 電話番号（tel, 任意）
-
-2. **お問い合わせ内容**
-   - カテゴリー（select, 必須）
-     - 選択肢: "-- 選択してください --", "一般的な質問", "技術サポート", "営業に関する質問", "その他"
-   - 件名（text, 必須）
-   - メッセージ（textarea, 必須）
-
-3. **希望する連絡方法**
-   - ご希望の連絡方法（radio, 必須）
-     - 選択肢: "メール", "電話", "SMS"
-
-**Template 出力形式**: 各セクションごとにヘッダーを付けた構造化された形式
-
----
-
-### 2. Order Form（注文フォーム）
-
-**用途**: 商品購入時の顧客情報と配送先を入力
-
-**セクション構成**:
-1. **顧客情報**
-   - 顧客区分（select, 必須）
-     - 選択肢: "-- 選択してください --", "新規顧客", "既存顧客"
-   - お名前（text, 必須）
-   - メールアドレス（email, 必須）
-
-2. **配送先情報**
-   - 郵便番号と都道府県・市区町村（text, 必須、並列配置）
-   - 丁目・番地（text, 必須）
-
-3. **商品情報**
-   - 商品（select, 必須）
-     - 選択肢: "-- 選択してください --", "商品A", "商品B", "商品C", "商品D"
-   - 数量（number, 必須）
-
-4. **支払い方法**
-   - 支払い方法（radio, 必須）
-     - 選択肢: "クレジットカード", "銀行振込", "代金引換"
-   - 備考（textarea, 任意）
-
-**Template 出力形式**: 顧客情報、配送先、商品、支払方法の各セクションに整理
-
----
-
-### 3. Support Ticket Form（サポートチケット）
-
-**用途**: 製品やサービスに関する問題報告・機能リクエスト
-
-**セクション構成**:
-1. **基本情報**
-   - 優先度（select, 必須）
-     - 選択肢: "-- 選択してください --", "低", "中", "高", "緊急"
-   - お名前（text, 必須）
-   - メールアドレス（email, 必須）
-
-2. **問題の詳細**
-   - 関連する製品/サービス（select, 必須）
-     - 選択肢: "-- 選択してください --", "製品A", "製品B", "サービスA", "サービスB"
-   - 問題の種類（select, 必須）
-     - 選択肢: "-- 選択してください --", "バグ報告", "機能リクエスト", "アカウント関連", "性能問題", "その他"
-   - 件名（text, 必須）
-   - 問題の説明（textarea, 必須）
-
-3. **追加情報**
-   - 影響を受けた機能（checkbox, 任意）
-     - 選択肢: "UI/UX", "パフォーマンス", "セキュリティ", "統合", "その他"
-   - 環境（text, 任意）
-   - 再現手順（textarea, 任意）
-
-4. **連絡先情報**
-   - ご希望の連絡方法（radio, 必須）
-     - 選択肢: "メール", "電話", "チャット"
-   - 電話番号（tel, 任意）
-
-**Template 出力形式**: 4つのセクションに分かれた詳細な形式
-
----
-
-## 使用例
-
-### Contact フォームのフィールド自動生成規則
-
-フィールドを定義する際のベストプラクティス：
-
+**複数テンプレートの例:**
 ```json
-{
-  "label": "お名前",
-  "type": "text",
-  "required": true
-}
+"templates": [
+  {
+    "label": "標準テンプレート",
+    "sections": [...]
+  },
+  {
+    "label": "シンプル版",
+    "sections": [...]
+  },
+  {
+    "label": "詳細版",
+    "sections": [...]
+  }
+]
 ```
 
-- `label` のみ指定した場合、`name` は自動生成されます（スペースを除去、ケバブケースなど）
-- `name` を明示的に指定することで、Template 内での参照を統一できます
+生成ボタンを押すと、複数のテンプレートが異なるタブに表示されます。タブを切り替えることで各テンプレートの出力を確認・コピーできます。
 
-### Template 内の変数参照
+### 3. 条件式 (Condition)
 
-フォーム内で定義されたフィールドの `name` または `label` をそのまま `{{ }}` で囲んで参照します。
+フォームやテンプレートセクションの表示を条件付けできます。
 
-**例**:
-```
-【基本情報】
-お名前: {{お名前}}
-メールアドレス: {{メールアドレス}}
-```
-
-または `name` が明示的に定義されている場合：
-```
-お名前: {{name}}
-メールアドレス: {{email}}
-```
-
----
-
-## 生成ガイドライン
-
-新しいデータファイルを生成する際に従うべきガイドライン：
-
-1. **セクション構成**
-   - 最低3つ、最大5つのセクションを目安に
-   - 各セクションは論理的にまとまった内容にする
-   - 明確で分かりやすいセクションラベルを付ける
-
-2. **フィールド命名**
-   - `label` は分かりやすい日本語表記
-   - `name` は英数字または「_」で統一（省略可。指定しない場合は自動生成）
-   - Template 内で参照しやすい名前にする
-
-3. **必須フラグ**
-   - ビジネスロジック上必須の情報は `required: true`
-   - オプション情報は `required: false`
-
-4. **Options の選択肢**
-   - select の場合、先頭に「-- 選択してください --」など空選択肢を配置するのが一般的
-   - radio/checkbox は空選択肢不要
-
-5. **Condition の使用**
-   - 他のフィールド値に応じて表示/非表示を切り替える場合のみ使用
-   - シンプルな条件は配列形式で、複雑な条件は `and`/`or` で明示的に
-
-6. **Template 内容**
-   - 人間が読みやすい形式にする
-   - 見出し（【 】）で各セクションを区切る
-   - 改行で構造を分かりやすく
-   - フィールド値は「キー: {{値}}」の形式
-
----
-
-## よくあるパターン
-
-### 横並び配置（複数フィールド）
-
+**AND 条件:**
 ```json
-{
-  "fields": [
-    [
-      { "label": "郵便番号", "type": "text", "required": true },
-      { "label": "都道府県", "type": "text", "required": true }
-    ],
-    { "label": "住所", "type": "text", "required": true }
+"condition": {
+  "and": [
+    { "field": "category", "value": "技術サポート" },
+    { "field": "status", "value": "active" }
   ]
 }
 ```
 
-### 条件付きセクション表示
-
+**OR 条件:**
 ```json
-{
-  "label": "追加費用",
-  "condition": [
-    { "field": "サービスプラン", "value": "プレミアム" }
-  ],
-  "fields": [
-    { "label": "追加オプション", "type": "checkbox", "options": ["A", "B", "C"] }
+"condition": {
+  "or": [
+    { "field": "category", "value": "技術サポート" },
+    { "field": "category", "value": "緊急" }
   ]
 }
 ```
 
-### 複数選択（Checkbox）
+## UI 構成
 
-```json
-{
-  "label": "関心のあるトピック",
-  "type": "checkbox",
-  "required": false,
-  "options": ["技術", "デザイン", "マーケティング", "営業"]
-}
-```
+### 左パネル：入力フォーム
+- フォーム設定に基づいて動的に生成
+- 条件付きフィールド表示に対応
+- セクションごとに整理された入力エリア
+- 設定ボタン（インポート、データ読込、リセット）
 
----
+### 右パネル：テンプレート出力
+- **テンプレートタブ**: 複数のテンプレートをタブで表示
+  - 各テンプレートに個別のタブを作成
+  - タブラベルは `TemplateConfiguration.label` から自動生成
+  - アクティブなタブのみコンテンツを表示
 
-## 注意事項
+- **コピーボタン**: アクティブなテンプレートの出力をクリップボードにコピー
 
-- `condition: null` または条件を指定しないセクション/フィールドは常に表示されます
-- Template 内で参照できる変数は、Form で定義されたフィールドの `name` または `label` のみです
-- 存在しないフィールド変数を Template で参照すると、空文字列として扱われます
-- セクション内のフィールド配列が空でないことを確認してください
+### 生成フロー
+1. フォームに入力・選択を行う
+2. 「生成」ボタンをクリック
+3. すべてのテンプレートが同時に処理される
+4. 各テンプレートの出力がそれぞれのタブに表示
+5. タブを切り替えて異なるフォーマットの出力を確認
+6. 「クリップボードにコピー」で必要なテンプレートをコピー
+
+## エクスポート
+
+**Export JSON** ボタンで、現在の設定を JSON ファイルとしてダウンロードできます。
+
+ファイル名: `{filename}.json` (contact, order, support など)
+
+## サポートされているフィールドタイプ
+
+| タイプ | 説明 | 入力例 |
+|--------|------|--------|
+| text | テキスト入力 | 名前、住所など |
+| email | メールアドレス入力 | user@example.com |
+| tel | 電話番号入力 | 090-1234-5678 |
+| number | 数字入力 | 価格、数量など |
+| date | 日付入力 | 2024-01-28 |
+| textarea | 複数行テキスト | コメント、メッセージなど |
+| select | ドロップダウン選択 | カテゴリー選択 |
+| radio | ラジオボタン | 単一選択 |
+| checkbox | チェックボックス | 複数選択 |

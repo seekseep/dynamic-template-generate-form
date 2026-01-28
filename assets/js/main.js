@@ -3,7 +3,7 @@ async function main () {
   const configData = loadConfig() ?? defaultConfig;
 
   const dynamicForm = createDynamicForm(configData.form)
-  const dynamicTemplate = createDynamicTemplate(configData.template)
+  const dynamicTemplates = createDynamicTemplates(configData.templates)
   const form = setupForm(dynamicForm)
 
   // フォームを DOM に追加
@@ -14,27 +14,80 @@ async function main () {
   }
   container.appendChild(form);
 
-  // テンプレート出力エリア
-  const templateOutput = document.getElementById('templateOutput');
-  if (!templateOutput) {
-    console.error('Element with id "templateOutput" not found');
+  // テンプレートタブのセットアップ
+  const templateTabs = document.getElementById('templateTabs');
+  const templateTabContent = document.getElementById('templateTabContent');
+  if (!templateTabs || !templateTabContent) {
+    console.error('Template tab elements not found');
     return;
   }
+
+  // タブを作成
+  dynamicTemplates.forEach((template, index) => {
+    const tabId = `template-tab-${index}`;
+    const contentId = `template-content-${index}`;
+
+    // タブボタン
+    const tabItem = document.createElement('li');
+    tabItem.className = 'nav-item';
+    tabItem.setAttribute('role', 'presentation');
+
+    const tabButton = document.createElement('button');
+    tabButton.className = `nav-link ${index === 0 ? 'active' : ''}`;
+    tabButton.id = tabId;
+    tabButton.setAttribute('data-bs-toggle', 'tab');
+    tabButton.setAttribute('data-bs-target', `#${contentId}`);
+    tabButton.setAttribute('type', 'button');
+    tabButton.setAttribute('role', 'tab');
+    tabButton.textContent = template.label;
+
+    tabItem.appendChild(tabButton);
+    templateTabs.appendChild(tabItem);
+
+    // タブコンテンツ
+    const tabPane = document.createElement('div');
+    tabPane.className = `tab-pane fade ${index === 0 ? 'show active' : ''}`;
+    tabPane.id = contentId;
+    tabPane.setAttribute('role', 'tabpanel');
+    tabPane.style.overflow = 'auto';
+    tabPane.style.flex = '1';
+
+    const pre = document.createElement('pre');
+    pre.style.cssText = 'white-space: pre-wrap; word-wrap: break-word; min-height: 400px; margin: 0;';
+    pre.className = 'template-output';
+    pre.setAttribute('data-template-index', index);
+
+    tabPane.appendChild(pre);
+    templateTabContent.appendChild(tabPane);
+  });
 
   // フォーム送信時（生成ボタン）
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     // テンプレートを生成
     const formData = getFormData(form);
-    const output = renderTemplate(dynamicForm, dynamicTemplate, formData);
-    templateOutput.textContent = output;
+    const outputs = renderTemplates(dynamicForm, dynamicTemplates, formData);
+
+    // 各テンプレートの出力をタブに反映
+    dynamicTemplates.forEach((template, index) => {
+      const pre = document.querySelector(`pre[data-template-index="${index}"]`);
+      if (pre) {
+        pre.textContent = outputs[template.label];
+      }
+    });
   });
 
   // コピーボタン
   const copyButton = document.getElementById('copyButton');
   if (copyButton) {
     copyButton.addEventListener('click', () => {
-      const text = templateOutput.textContent;
+      // アクティブなタブのテキストをコピー
+      const activePane = templateTabContent.querySelector('.tab-pane.active');
+      if (!activePane) {
+        alert('コピーするテンプレートがありません');
+        return;
+      }
+      const text = activePane.querySelector('pre').textContent;
       navigator.clipboard.writeText(text).then(() => {
         // フィードバック表示（オプション）
         const originalText = copyButton.textContent;
@@ -45,6 +98,39 @@ async function main () {
       }).catch(err => {
         console.error('クリップボードへのコピーに失敗:', err);
       });
+    });
+  }
+
+  // データ読込ボタン
+  const loadDataBtn = document.getElementById('loadDataBtn');
+  if (loadDataBtn) {
+    loadDataBtn.addEventListener('click', () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e) => {
+        try {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              const data = JSON.parse(event.target.result);
+              setFormData(form, data);
+            } catch (error) {
+              alert('JSONの解析に失敗しました: ' + error.message);
+            }
+          };
+          reader.onerror = () => {
+            alert('ファイルの読み込みに失敗しました');
+          };
+          reader.readAsText(file);
+        } catch (error) {
+          alert('データの読み込みに失敗しました: ' + error.message);
+        }
+      };
+      input.click();
     });
   }
 

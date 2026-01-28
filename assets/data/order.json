@@ -55,8 +55,6 @@
         "condition": null,
         "fields": [
           {
-            "id": "product",
-            "name": "product",
             "label": "商品",
             "type": "select",
             "required": true,
@@ -69,8 +67,6 @@
             ]
           },
           {
-            "id": "quantity",
-            "name": "quantity",
             "label": "数量",
             "type": "number",
             "required": true
@@ -82,8 +78,6 @@
         "condition": null,
         "fields": [
           {
-            "id": "payment_method",
-            "name": "payment_method",
             "label": "支払い方法",
             "type": "radio",
             "required": true,
@@ -94,8 +88,6 @@
             ]
           },
           {
-            "id": "notes",
-            "name": "notes",
             "label": "備考",
             "type": "textarea",
             "required": false
@@ -104,28 +96,76 @@
       }
     ]
   },
-  "template": {
-    "sections": [
-      {
-        "label": "顧客情報",
-        "condition": null,
-        "content": "【顧客情報】\n顧客区分: {{customer_type}}\nお名前: {{customer_name}}\nメールアドレス: {{email}}\n"
-      },
-      {
-        "label": "配送先情報",
-        "condition": null,
-        "content": "【配送先情報】\n郵便番号: {{postal_code}}\n住所: {{address1}}{{address2}}\n"
-      },
-      {
-        "label": "商品情報",
-        "condition": null,
-        "content": "【商品情報】\n商品: {{product}}\n数量: {{quantity}}\n"
-      },
-      {
-        "label": "支払い方法",
-        "condition": null,
-        "content": "【支払い方法】\n支払い方法: {{payment_method}}\n備考: {{notes}}\n"
-      }
-    ]
-  }
+  "templates": [
+    {
+      "label": "標準テンプレート",
+      "sections": [
+        {
+          "label": "顧客情報",
+          "condition": null,
+          "content": "【顧客情報】\n顧客区分: {{顧客区分}}\nお名前: {{お名前}}\nメールアドレス: {{メールアドレス}}\n"
+        },
+        {
+          "label": "配送先情報",
+          "condition": null,
+          "content": "【配送先情報】\n郵便番号: {{郵便番号}}\n住所: {{都道府県・市区町村}}{{丁目・番地}}\n"
+        },
+        {
+          "label": "商品情報",
+          "condition": null,
+          "content": "【商品情報】\n商品: {{商品}}\n数量: {{数量}}\n"
+        },
+        {
+          "label": "支払い方法",
+          "condition": null,
+          "content": "【支払い方法】\n支払い方法: {{支払い方法}}\n備考: {{備考}}\n"
+        }
+      ]
+    },
+    {
+      "label": "請求書形式",
+      "sections": [
+        {
+          "label": "顧客情報",
+          "condition": null,
+          "content": "請求先\n顧客区分: {{顧客区分}}\n氏名: {{お名前}}\nメール: {{メールアドレス}}\n"
+        },
+        {
+          "label": "配送先情報",
+          "condition": null,
+          "content": "\n発送先\n〒{{郵便番号}}\n{{都道府県・市区町村}}{{丁目・番地}}\n"
+        },
+        {
+          "label": "商品情報",
+          "condition": null,
+          "content": "\n商品: {{商品}} ×{{数量}}\n"
+        }
+      ]
+    },
+    {
+      "label": "発送案内",
+      "sections": [
+        {
+          "label": "顧客情報",
+          "condition": null,
+          "content": "{{お名前}}様へ\n\nいつもご利用いただきありがとうございます。\n"
+        },
+        {
+          "label": "配送先情報",
+          "condition": null,
+          "content": "\n【発送先】\n{{都道府県・市区町村}}{{丁目・番地}}\n〒{{郵便番号}}\n"
+        },
+        {
+          "label": "商品情報",
+          "condition": null,
+          "content": "\n【注文商品】\n商品: {{商品}}\n数量: {{数量}}個\n"
+        },
+        {
+          "label": "支払い方法",
+          "condition": null,
+          "content": "\n【支払い方法】\n{{支払い方法}}\n\nご質問があればお気軽にお問い合わせください。"
+        }
+      ]
+    }
+  ]
 }

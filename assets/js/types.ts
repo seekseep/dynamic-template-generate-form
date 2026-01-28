@@ -107,6 +107,7 @@ export interface FormConfig {
  * テンプレート設定（JSON入力形式）
  */
 export interface TemplateConfig {
+  label: string;
   sections: Array<{
     label: string;
     name?: string;

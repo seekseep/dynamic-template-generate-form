@@ -30,6 +30,52 @@ function getFormData(form) {
 }
 
 /**
+ * フォームにデータを設定
+ * @param {HTMLFormElement} form
+ * @param {Object} data - フォームに設定するデータ
+ */
+function setFormData(form, data) {
+  if (!data || typeof data !== 'object') {
+    return;
+  }
+
+  // すべての入力要素を取得
+  const inputs = form.querySelectorAll('input, select, textarea');
+
+  inputs.forEach(input => {
+    const name = input.name;
+    if (!name || !(name in data)) {
+      return;
+    }
+
+    const value = data[name];
+
+    if (input.type === 'checkbox' || input.type === 'radio') {
+      // チェックボックスとラジオボタンの場合
+      const isArray = Array.isArray(value);
+      const values = isArray ? value : [value];
+
+      if (values.includes(input.value)) {
+        input.checked = true;
+      } else {
+        input.checked = false;
+      }
+    } else if (input.tagName === 'SELECT') {
+      // セレクトボックスの場合
+      input.value = value;
+    } else {
+      // テキスト入力やテキストエリアの場合
+      input.value = value;
+    }
+  });
+
+  // フォーム状態を更新（条件付き表示の更新）
+  const formData = getFormData(form);
+  const formState = generateFormState(form.dynamicForm, formData);
+  applyFormState(formState);
+}
+
+/**
  * 条件式を評価
  * @param {DynamicFormCondition | null} condition
  * @param {Object} formData
@@ -139,6 +185,7 @@ function setupForm(dynamicForm) {
   const form = document.createElement('form');
   form.id = 'dynamicForm';
   form.className = 'needs-validation';
+  form.dynamicForm = dynamicForm; // dynamicForm をフォーム要素に保存
 
   // セクションを追加
   dynamicForm.sections.forEach(section => {

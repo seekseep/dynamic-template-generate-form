@@ -1,36 +1,87 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" style="height: 100%;">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>動的フォーム</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      .main-container {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+      }
+      .left-panel {
+        flex: 1;
+        overflow-y: auto;
+        border-right: 1px solid #dee2e6;
+        padding: 2rem;
+      }
+      .right-panel {
+        flex: 1;
+        overflow: hidden;
+        padding: 2rem;
+        background-color: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+      }
+      .right-panel .card {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1rem;
+      }
+      .right-panel .card-body {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+      .right-panel pre {
+        flex: 1;
+        margin-bottom: 0;
+      }
+    </style>
   </head>
   <body>
-    <div class="container-fluid h-100" style="min-height: 100vh;">
-      <div class="row h-100">
-        <div class="col-md-6" style="overflow-y: auto; border-right: 1px solid #dee2e6; padding: 2rem;">
-          <div class="mb-3">
-            <h5>設定</h5>
-            <div class="btn-group w-100" role="group">
-              <button id="importFormBtn" class="btn btn-outline-secondary btn-sm">インポート</button>
-              <button id="resetFormBtn" class="btn btn-outline-danger btn-sm">リセット</button>
-            </div>
+    <div class="main-container">
+      <!-- 左側：入力フォーム -->
+      <div class="left-panel">
+        <div class="mb-3">
+          <h5>設定</h5>
+          <div class="btn-group w-100" role="group">
+            <button id="importFormBtn" class="btn btn-outline-secondary btn-sm">インポート</button>
+            <button id="loadDataBtn" class="btn btn-outline-primary btn-sm">データ読込</button>
+            <button id="resetFormBtn" class="btn btn-outline-danger btn-sm">リセット</button>
           </div>
-          <div id="inputFormContainer"></div>
         </div>
+        <div id="inputFormContainer"></div>
+      </div>
 
-        <!-- 右側：テンプレート出力 -->
-        <div class="col-md-6" style="overflow-y: auto; padding: 2rem; background-color: #f8f9fa;">
-          <div class="card mb-3">
-            <div class="card-body">
-              <pre id="templateOutput" style="white-space: pre-wrap; word-wrap: break-word; min-height: 400px;"></pre>
-            </div>
+      <!-- 右側：テンプレート出力 -->
+      <div class="right-panel">
+        <div class="card mb-3">
+          <!-- テンプレートタブ -->
+          <ul id="templateTabs" class="nav nav-tabs" role="tablist">
+          </ul>
+          <div id="templateTabContent" class="tab-content flex-grow-1" style="overflow: hidden; display: flex; flex-direction: column;">
           </div>
-          <button id="copyButton" class="btn btn-primary w-100">
-            クリップボードにコピー
-          </button>
         </div>
+        <button id="copyButton" class="btn btn-primary w-100">
+          クリップボードにコピー
+        </button>
       </div>
     </div>
 

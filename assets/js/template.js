@@ -65,3 +65,20 @@ function renderTemplate(dynamicForm, dynamicTemplate, formData) {
 
   return output;
 }
+
+/**
+ * 複数のテンプレートをレンダリング
+ * @param {DynamicForm} dynamicForm
+ * @param {Array<DynamicTemplate>} dynamicTemplates
+ * @param {Object} formData
+ * @returns {Object} { [label]: output }
+ */
+function renderTemplates(dynamicForm, dynamicTemplates, formData) {
+  const results = {};
+
+  dynamicTemplates.forEach(template => {
+    results[template.label] = renderTemplate(dynamicForm, template, formData);
+  });
+
+  return results;
+}

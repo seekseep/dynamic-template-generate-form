@@ -16,8 +16,6 @@ const defaultConfig = {
             ]
           },
           {
-            "id": "email",
-            "name": "email",
             "label": "メールアドレス",
             "type": "email",
             "required": true
@@ -102,28 +100,76 @@ const defaultConfig = {
       }
     ]
   },
-  template: {
-    "sections": [
-      {
-        "label": "基本情報",
-        "condition": null,
-        "content": "【申込内容】\nメールアドレス: {{email}}\n種別: {{種別}}\n"
-      },
-      {
-        "label": "個人情報",
-        "condition": [{ "field": "種別", "value": "個人" }],
-        "content": "【個人情報】\nお名前: {{姓}} {{名}}\n"
-      },
-      {
-        "label": "企業情報",
-        "condition": [{ "field": "種別", "value": "企業" }],
-        "content": "【企業情報】\n会社名: {{会社名}}\n従業員数: {{従業員数}}\n"
-      },
-      {
-        "label": "追加情報",
-        "condition": null,
-        "content": "【追加情報】\n訪問予定日: {{訪問予定日}}\nご希望の連絡方法: {{ご希望の連絡方法}}\nご関心のある分野: {{ご関心のある分野}}\nコメント:\n{{コメント}}\n"
-      }
-    ]
-  }
+  templates: [
+    {
+      "label": "標準テンプレート",
+      "sections": [
+        {
+          "label": "基本情報",
+          "condition": null,
+          "content": "【申込内容】\nメールアドレス: {{email}}\n種別: {{種別}}\n"
+        },
+        {
+          "label": "個人情報",
+          "condition": [{ "field": "種別", "value": "個人" }],
+          "content": "【個人情報】\nお名前: {{姓}} {{名}}\n"
+        },
+        {
+          "label": "企業情報",
+          "condition": [{ "field": "種別", "value": "企業" }],
+          "content": "【企業情報】\n会社名: {{会社名}}\n従業員数: {{従業員数}}\n"
+        },
+        {
+          "label": "追加情報",
+          "condition": null,
+          "content": "【追加情報】\n訪問予定日: {{訪問予定日}}\nご希望の連絡方法: {{ご希望の連絡方法}}\nご関心のある分野: {{ご関心のある分野}}\nコメント:\n{{コメント}}\n"
+        }
+      ]
+    },
+    {
+      "label": "申込確認書",
+      "sections": [
+        {
+          "label": "基本情報",
+          "condition": null,
+          "content": "━━━━━━━━━━━━━━━━━━━━\n   申込確認書\n━━━━━━━━━━━━━━━━━━━━\n\nメールアドレス: {{email}}\n申込区分: {{種別}}\n"
+        },
+        {
+          "label": "個人情報",
+          "condition": [{ "field": "種別", "value": "個人" }],
+          "content": "\n【個人情報】\nお名前: {{姓}} {{名}}\n"
+        },
+        {
+          "label": "企業情報",
+          "condition": [{ "field": "種別", "value": "企業" }],
+          "content": "\n【企業情報】\n会社名: {{会社名}}\n従業員数: {{従業員数}}\n"
+        },
+        {
+          "label": "追加情報",
+          "condition": null,
+          "content": "\n【その他の情報】\n訪問予定日: {{訪問予定日}}\n連絡方法: {{ご希望の連絡方法}}\n\n━━━━━━━━━━━━━━━━━━━━"
+        }
+      ]
+    },
+    {
+      "label": "シンプル版",
+      "sections": [
+        {
+          "label": "基本情報",
+          "condition": null,
+          "content": "Email: {{email}}\nType: {{種別}}\n"
+        },
+        {
+          "label": "個人情報",
+          "condition": [{ "field": "種別", "value": "個人" }],
+          "content": "Name: {{姓}} {{名}}\n"
+        },
+        {
+          "label": "企業情報",
+          "condition": [{ "field": "種別", "value": "企業" }],
+          "content": "Company: {{会社名}}\nSize: {{従業員数}}\n"
+        }
+      ]
+    }
+  ]
 }
