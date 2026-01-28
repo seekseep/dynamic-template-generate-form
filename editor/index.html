@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Template Editor</title>
+
+  <!-- Bootstrap 5.3.0 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- CodeMirror 5.65.2 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+
+  <!-- 共有CSS -->
+  <link rel="stylesheet" href="assets/css/editor.css">
+</head>
+<body>
+  <!-- ツールバー -->
+  <nav class="navbar navbar-light bg-light border-bottom">
+    <div class="container-fluid">
+      <span class="navbar-brand mb-0 h1">Dynamic Template Editor</span>
+      <div class="btn-group me-3" role="group">
+        <button id="contactTab" class="btn btn-outline-primary">Contact</button>
+        <button id="orderTab" class="btn btn-outline-primary">Order</button>
+        <button id="supportTab" class="btn btn-outline-primary">Support</button>
+      </div>
+      <div class="btn-group">
+        <button id="exportBtn" class="btn btn-success">Export JSON</button>
+        <button id="formatBtn" class="btn btn-secondary">Format</button>
+        <button id="resetBtn" class="btn btn-danger">Reset</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- メインコンテナ -->
+  <div class="container-fluid h-100">
+    <div class="row h-100">
+      <!-- 左パネル: エディター -->
+      <div class="col-md-6 editor-panel">
+        <ul class="nav nav-tabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="jsonEditorTab" href="#jsonEditor" data-bs-toggle="tab" role="tab">JSON Editor</a>
+          </li>
+          <li class="nav-item" role="presentation">
+            <a class="nav-link" id="visualEditorTab" href="#visualEditor" data-bs-toggle="tab" role="tab">Visual Editor</a>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <!-- JSONエディタータブ -->
+          <div id="jsonEditor" class="tab-pane fade show active" role="tabpanel">
+            <textarea id="jsonTextarea"></textarea>
+          </div>
+
+          <!-- ビジュアルエディタータブ -->
+          <div id="visualEditor" class="tab-pane fade" role="tabpanel">
+            <div id="formBuilder" style="display: none;"></div>
+            <div id="templateBuilder" style="display: none;"></div>
+            <p class="text-muted mt-3">ビジュアルエディターはPhase 2で実装予定です。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右パネル: プレビュー -->
+      <div class="col-md-6 preview-panel">
+        <h5 class="mb-3">Preview</h5>
+        <div id="preview" style="border: 1px solid #ccc; padding: 15px; background: #f9f9f9; max-height: calc(100vh - 150px); overflow-y: auto; border-radius: 4px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- スクリプト -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+
+  <!-- 共有モジュール -->
+  <script src="../assets/js/factory.js"></script>
+  <script src="../assets/js/form.js"></script>
+  <script src="../assets/js/template.js"></script>
+
+  <!-- エディターモジュール -->
+  <script src="assets/js/editor-utils.js"></script>
+  <script src="assets/js/editor-storage.js"></script>
+  <script src="assets/js/json-editor.js"></script>
+  <script src="assets/js/preview-renderer.js"></script>
+  <script src="assets/js/form-builder.js"></script>
+  <script src="assets/js/template-builder.js"></script>
+  <script src="assets/js/editor-main.js"></script>
+</body>
+</html>
