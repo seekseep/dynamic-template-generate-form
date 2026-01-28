@@ -68,13 +68,6 @@ async function main () {
     });
   }
 
-  // エクスポートボタン
-  const exportFormBtn = document.getElementById('exportFormBtn');
-  if (exportFormBtn) {
-    exportFormBtn.addEventListener('click', () => {
-      exportConfig(configData);
-    });
-  }
 
   // リセットボタン
   const resetFormBtn = document.getElementById('resetFormBtn');

@@ -28,16 +28,18 @@ async function main() {
 
   // CodeMirrorの初期化を待つ
   await new Promise(resolve => {
+    let timeoutId;
     const checkInterval = setInterval(() => {
       if (typeof jsonEditor !== 'undefined' && jsonEditor) {
         clearInterval(checkInterval);
+        clearTimeout(timeoutId);
         console.log('CodeMirror is ready');
         resolve();
       }
     }, 100);
 
     // 2秒後にタイムアウト
-    setTimeout(() => {
+    timeoutId = setTimeout(() => {
       clearInterval(checkInterval);
       console.warn('CodeMirror initialization timeout');
       resolve();
@@ -94,6 +96,16 @@ function setupEventListeners() {
 
   // JSONエディター変更イベント（json-editor.jsで設定）
   // ここでは、json-editor.jsがjsonEditorの変更イベントをリスンする
+
+  // Visual Editor タブ切り替えイベント
+  const visualEditorTab = document.getElementById('visualEditorTab');
+  if (visualEditorTab) {
+    visualEditorTab.addEventListener('click', () => {
+      setTimeout(() => {
+        initializeVisualEditors(editorState.currentData);
+      }, 50);
+    });
+  }
 }
 
 /**
@@ -167,6 +179,40 @@ function getCurrentData() {
 function updateCurrentData(data) {
   editorState.currentData = data;
   editorState.isDirty = true;
+}
+
+/**
+ * ビジュアルエディターを初期化
+ */
+function initializeVisualEditors(data) {
+  // Form Builder を初期化
+  if (typeof initializeFormBuilder === 'function') {
+    initializeFormBuilder(data.form, onVisualEditorUpdate);
+    document.getElementById('formBuilder').style.display = 'block';
+  }
+
+  // Template Builder を初期化
+  if (typeof initializeTemplateBuilder === 'function') {
+    initializeTemplateBuilder(data.template, onVisualEditorUpdate);
+    document.getElementById('templateBuilder').style.display = 'block';
+  }
+}
+
+/**
+ * ビジュアルエディターの更新コールバック
+ */
+function onVisualEditorUpdate() {
+  // JSON エディターを更新
+  if (typeof updateJSONEditor === 'function') {
+    updateJSONEditor(editorState.currentData);
+  }
+
+  // プレビューを更新
+  if (typeof updatePreview === 'function') {
+    updatePreview(editorState.currentData);
+  }
+
+  markAsDirty();
 }
 
 // ページロード時に実行
