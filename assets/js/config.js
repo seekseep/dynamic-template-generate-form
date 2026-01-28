@@ -1,75 +1,59 @@
 const defaultConfig = {
-  form: {
+  "form": {
     "sections": [
       {
         "label": "基本情報",
         "condition": null,
         "fields": [
           {
-            "label": "種別",
-            "type": "select",
-            "required": true,
-            "options": [
-              "-- 選択してください --",
-              "個人",
-              "企業"
-            ]
+            "label": "お名前",
+            "type": "text",
+            "required": true
           },
           {
             "label": "メールアドレス",
             "type": "email",
             "required": true
+          },
+          {
+            "label": "電話番号",
+            "type": "tel",
+            "required": false
           }
         ]
       },
       {
-        "label": "個人情報",
-        "condition": [{ "field": "種別", "value": "個人" }],
-        "fields": [
-          [
-            {
-              "label": "姓",
-              "type": "text",
-              "required": true
-            },
-            {
-              "label": "名",
-              "type": "text",
-              "required": true
-            }
-          ]
-        ]
-      },
-      {
-        "label": "企業情報",
-        "condition": [{ "field": "種別", "value": "企業" }],
-        "fields": [{
-          "label": "会社名",
-          "type": "text",
-          "required": true
-        }, {
-          "label": "従業員数",
-          "type": "select",
-          "required": true,
-          "options": [
-            "-- 選択してください --",
-            "1-10名",
-            "11-50名",
-            "51-100名",
-            "100名以上"
-          ],
-        }
-        ]
-      },
-      {
-        "label": "追加情報",
+        "label": "お問い合わせ内容",
         "condition": null,
         "fields": [
           {
-            "label": "訪問予定日",
-            "type": "date",
-            "required": false,
+            "label": "カテゴリー",
+            "type": "select",
+            "required": true,
+            "options": [
+              "-- 選択してください --",
+              "一般的な質問",
+              "技術サポート",
+              "営業に関する質問",
+              "その他"
+            ]
           },
+          {
+            "label": "件名",
+            "type": "text",
+            "required": true
+          },
+          {
+            "label": "メッセージ",
+            "type": "textarea",
+            "required": true
+          }
+        ]
+      },
+      {
+        "label": "希望する連絡方法",
+        "condition": null,
+        "fields": [
           {
             "label": "ご希望の連絡方法",
             "type": "radio",
@@ -79,75 +63,29 @@ const defaultConfig = {
               "電話",
               "SMS"
             ]
-          },
-          {
-            "label": "ご関心のある分野",
-            "type": "checkbox",
-            "required": false,
-            "options": [
-              "マーケティング",
-              "営業",
-              "技術",
-              "カスタマーサポート"
-            ],
-          },
-          {
-            "label": "コメント",
-            "type": "textarea",
-            "required": false
           }
         ]
       }
     ]
   },
-  templates: [
+  "templates": [
     {
       "label": "標準テンプレート",
       "sections": [
         {
           "label": "基本情報",
           "condition": null,
-          "content": "【申込内容】\nメールアドレス: {{email}}\n種別: {{種別}}\n"
+          "content": "【基本情報】\nお名前: {{name}}\nメールアドレス: {{email}}\n電話番号: {{phone}}\n"
         },
         {
-          "label": "個人情報",
-          "condition": [{ "field": "種別", "value": "個人" }],
-          "content": "【個人情報】\nお名前: {{姓}} {{名}}\n"
-        },
-        {
-          "label": "企業情報",
-          "condition": [{ "field": "種別", "value": "企業" }],
-          "content": "【企業情報】\n会社名: {{会社名}}\n従業員数: {{従業員数}}\n"
-        },
-        {
-          "label": "追加情報",
+          "label": "お問い合わせ内容",
           "condition": null,
-          "content": "【追加情報】\n訪問予定日: {{訪問予定日}}\nご希望の連絡方法: {{ご希望の連絡方法}}\nご関心のある分野: {{ご関心のある分野}}\nコメント:\n{{コメント}}\n"
-        }
-      ]
-    },
-    {
-      "label": "申込確認書",
-      "sections": [
+          "content": "【お問い合わせ内容】\nカテゴリー: {{category}}\n件名: {{subject}}\nメッセージ:\n{{message}}\n"
+        },
         {
-          "label": "基本情報",
+          "label": "希望する連絡方法",
           "condition": null,
-          "content": "━━━━━━━━━━━━━━━━━━━━\n   申込確認書\n━━━━━━━━━━━━━━━━━━━━\n\nメールアドレス: {{email}}\n申込区分: {{種別}}\n"
-        },
-        {
-          "label": "個人情報",
-          "condition": [{ "field": "種別", "value": "個人" }],
-          "content": "\n【個人情報】\nお名前: {{姓}} {{名}}\n"
-        },
-        {
-          "label": "企業情報",
-          "condition": [{ "field": "種別", "value": "企業" }],
-          "content": "\n【企業情報】\n会社名: {{会社名}}\n従業員数: {{従業員数}}\n"
-        },
-        {
-          "label": "追加情報",
-          "condition": null,
-          "content": "\n【その他の情報】\n訪問予定日: {{訪問予定日}}\n連絡方法: {{ご希望の連絡方法}}\n\n━━━━━━━━━━━━━━━━━━━━"
+          "content": "【希望する連絡方法】\nご希望の連絡方法: {{contact_method}}\n"
         }
       ]
     },
@@ -157,17 +95,32 @@ const defaultConfig = {
         {
           "label": "基本情報",
           "condition": null,
-          "content": "Email: {{email}}\nType: {{種別}}\n"
+          "content": "名前: {{name}}\nメール: {{email}}\n"
         },
         {
-          "label": "個人情報",
-          "condition": [{ "field": "種別", "value": "個人" }],
-          "content": "Name: {{姓}} {{名}}\n"
+          "label": "お問い合わせ内容",
+          "condition": null,
+          "content": "件名: {{subject}}\n内容: {{message}}\n"
+        }
+      ]
+    },
+    {
+      "label": "詳細版",
+      "sections": [
+        {
+          "label": "基本情報",
+          "condition": null,
+          "content": "=== 基本情報 ===\nお名前: {{name}}\nメールアドレス: {{email}}\n電話番号: {{phone}}\n"
         },
         {
-          "label": "企業情報",
-          "condition": [{ "field": "種別", "value": "企業" }],
-          "content": "Company: {{会社名}}\nSize: {{従業員数}}\n"
+          "label": "お問い合わせ内容",
+          "condition": null,
+          "content": "\n=== お問い合わせ内容 ===\nカテゴリー: {{category}}\n件名: {{subject}}\n\nメッセージ:\n{{message}}\n"
+        },
+        {
+          "label": "希望する連絡方法",
+          "condition": null,
+          "content": "\n=== 連絡先 ===\nご希望の連絡方法: {{contact_method}}\n"
         }
       ]
     }
