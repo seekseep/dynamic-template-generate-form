@@ -6,22 +6,16 @@
         "condition": null,
         "fields": [
           {
-            "id": "name",
-            "name": "name",
             "label": "お名前",
             "type": "text",
             "required": true
           },
           {
-            "id": "email",
-            "name": "email",
             "label": "メールアドレス",
             "type": "email",
             "required": true
           },
           {
-            "id": "phone",
-            "name": "phone",
             "label": "電話番号",
             "type": "tel",
             "required": false
@@ -33,8 +27,6 @@
         "condition": null,
         "fields": [
           {
-            "id": "category",
-            "name": "category",
             "label": "カテゴリー",
             "type": "select",
             "required": true,
@@ -47,15 +39,11 @@
             ]
           },
           {
-            "id": "subject",
-            "name": "subject",
             "label": "件名",
             "type": "text",
             "required": true
           },
           {
-            "id": "message",
-            "name": "message",
             "label": "メッセージ",
             "type": "textarea",
             "required": true
@@ -67,8 +55,6 @@
         "condition": null,
         "fields": [
           {
-            "id": "contact_method",
-            "name": "contact_method",
             "label": "ご希望の連絡方法",
             "type": "radio",
             "required": true,

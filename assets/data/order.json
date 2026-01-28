@@ -6,8 +6,6 @@
         "condition": null,
         "fields": [
           {
-            "id": "customer_type",
-            "name": "customer_type",
             "label": "顧客区分",
             "type": "select",
             "required": true,
@@ -18,15 +16,11 @@
             ]
           },
           {
-            "id": "customer_name",
-            "name": "customer_name",
             "label": "お名前",
             "type": "text",
             "required": true
           },
           {
-            "id": "email",
-            "name": "email",
             "label": "メールアドレス",
             "type": "email",
             "required": true
@@ -39,23 +33,17 @@
         "fields": [
           [
             {
-              "id": "postal_code",
-              "name": "postal_code",
               "label": "郵便番号",
               "type": "text",
               "required": true
             },
             {
-              "id": "address1",
-              "name": "address1",
               "label": "都道府県・市区町村",
               "type": "text",
               "required": true
             }
           ],
           {
-            "id": "address2",
-            "name": "address2",
             "label": "丁目・番地",
             "type": "text",
             "required": true

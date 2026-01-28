@@ -6,8 +6,6 @@
         "condition": null,
         "fields": [
           {
-            "id": "ticket_priority",
-            "name": "ticket_priority",
             "label": "優先度",
             "type": "select",
             "required": true,
@@ -20,15 +18,11 @@
             ]
           },
           {
-            "id": "name",
-            "name": "name",
             "label": "お名前",
             "type": "text",
             "required": true
           },
           {
-            "id": "email",
-            "name": "email",
             "label": "メールアドレス",
             "type": "email",
             "required": true
@@ -40,8 +34,6 @@
         "condition": null,
         "fields": [
           {
-            "id": "product",
-            "name": "product",
             "label": "関連する製品/サービス",
             "type": "select",
             "required": true,
@@ -54,8 +46,6 @@
             ]
           },
           {
-            "id": "issue_type",
-            "name": "issue_type",
             "label": "問題の種類",
             "type": "select",
             "required": true,
@@ -69,15 +59,11 @@
             ]
           },
           {
-            "id": "subject",
-            "name": "subject",
             "label": "件名",
             "type": "text",
             "required": true
           },
           {
-            "id": "description",
-            "name": "description",
             "label": "問題の説明",
             "type": "textarea",
             "required": true
@@ -89,8 +75,6 @@
         "condition": null,
         "fields": [
           {
-            "id": "affected_features",
-            "name": "affected_features",
             "label": "影響を受けた機能",
             "type": "checkbox",
             "required": false,
@@ -103,15 +87,11 @@
             ]
           },
           {
-            "id": "environment",
-            "name": "environment",
             "label": "環境",
             "type": "text",
             "required": false
           },
           {
-            "id": "steps_to_reproduce",
-            "name": "steps_to_reproduce",
             "label": "再現手順",
             "type": "textarea",
             "required": false
@@ -123,8 +103,6 @@
         "condition": null,
         "fields": [
           {
-            "id": "contact_method",
-            "name": "contact_method",
             "label": "ご希望の連絡方法",
             "type": "radio",
             "required": true,
@@ -135,8 +113,6 @@
             ]
           },
           {
-            "id": "phone",
-            "name": "phone",
             "label": "電話番号",
             "type": "tel",
             "required": false
