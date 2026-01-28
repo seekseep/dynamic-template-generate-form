@@ -1,0 +1,143 @@
+{
+  "form": {
+    "sections": [
+      {
+        "label": "顧客情報",
+        "condition": null,
+        "fields": [
+          {
+            "id": "customer_type",
+            "name": "customer_type",
+            "label": "顧客区分",
+            "type": "select",
+            "required": true,
+            "options": [
+              "-- 選択してください --",
+              "新規顧客",
+              "既存顧客"
+            ]
+          },
+          {
+            "id": "customer_name",
+            "name": "customer_name",
+            "label": "お名前",
+            "type": "text",
+            "required": true
+          },
+          {
+            "id": "email",
+            "name": "email",
+            "label": "メールアドレス",
+            "type": "email",
+            "required": true
+          }
+        ]
+      },
+      {
+        "label": "配送先情報",
+        "condition": null,
+        "fields": [
+          [
+            {
+              "id": "postal_code",
+              "name": "postal_code",
+              "label": "郵便番号",
+              "type": "text",
+              "required": true
+            },
+            {
+              "id": "address1",
+              "name": "address1",
+              "label": "都道府県・市区町村",
+              "type": "text",
+              "required": true
+            }
+          ],
+          {
+            "id": "address2",
+            "name": "address2",
+            "label": "丁目・番地",
+            "type": "text",
+            "required": true
+          }
+        ]
+      },
+      {
+        "label": "商品情報",
+        "condition": null,
+        "fields": [
+          {
+            "id": "product",
+            "name": "product",
+            "label": "商品",
+            "type": "select",
+            "required": true,
+            "options": [
+              "-- 選択してください --",
+              "商品A",
+              "商品B",
+              "商品C",
+              "商品D"
+            ]
+          },
+          {
+            "id": "quantity",
+            "name": "quantity",
+            "label": "数量",
+            "type": "number",
+            "required": true
+          }
+        ]
+      },
+      {
+        "label": "支払い方法",
+        "condition": null,
+        "fields": [
+          {
+            "id": "payment_method",
+            "name": "payment_method",
+            "label": "支払い方法",
+            "type": "radio",
+            "required": true,
+            "options": [
+              "クレジットカード",
+              "銀行振込",
+              "代金引換"
+            ]
+          },
+          {
+            "id": "notes",
+            "name": "notes",
+            "label": "備考",
+            "type": "textarea",
+            "required": false
+          }
+        ]
+      }
+    ]
+  },
+  "template": {
+    "sections": [
+      {
+        "label": "顧客情報",
+        "condition": null,
+        "content": "【顧客情報】\n顧客区分: {{customer_type}}\nお名前: {{customer_name}}\nメールアドレス: {{email}}\n"
+      },
+      {
+        "label": "配送先情報",
+        "condition": null,
+        "content": "【配送先情報】\n郵便番号: {{postal_code}}\n住所: {{address1}}{{address2}}\n"
+      },
+      {
+        "label": "商品情報",
+        "condition": null,
+        "content": "【商品情報】\n商品: {{product}}\n数量: {{quantity}}\n"
+      },
+      {
+        "label": "支払い方法",
+        "condition": null,
+        "content": "【支払い方法】\n支払い方法: {{payment_method}}\n備考: {{notes}}\n"
+      }
+    ]
+  }
+}
