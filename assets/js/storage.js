@@ -7,7 +7,7 @@ class DynamicStorage {
     try {
       const json = localStorage.getItem(DynamicStorage.STORAGE_KEYS.CONFIG);
       const data = JSON.parse(json);
-      const configuration = DynamicConfiguration.create(data);
+      const configuration = GeneratorConfiguration.create(data);
       return configuration;
     } catch {
       return defaultConfiguration;

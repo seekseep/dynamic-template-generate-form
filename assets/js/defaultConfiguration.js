@@ -1,0 +1,61 @@
+const defaultConfiguration = GeneratorConfiguration.create({
+  form: {
+    sections: [
+      {
+        label: "基本情報",
+        condition: null,
+        fields: [
+          { label: "お名前", type: "text", required: true },
+          { label: "メールアドレス", type: "email", required: true },
+          { label: "電話番号", type: "tel", required: false }
+        ]
+      },
+      {
+        label: "お問い合わせ内容",
+        condition: null,
+        fields: [
+          {
+            label: "カテゴリー",
+            type: "select",
+            required: true,
+            options: ["-- 選択してください --", "一般的な質問", "技術サポート", "営業に関する質問", "その他"]
+          },
+          { label: "件名", type: "text", required: true },
+          { label: "メッセージ", type: "textarea", required: true }
+        ]
+      },
+      {
+        label: "希望する連絡方法",
+        condition: null,
+        fields: [
+          { label: "ご希望の連絡方法", type: "radio", required: true, options: ["メール", "電話", "SMS"] }
+        ]
+      }
+    ]
+  },
+  templates: [
+    {
+      label: "標準テンプレート",
+      sections: [
+        { label: "基本情報", condition: null, content: "【基本情報】\nお名前: {{name}}\nメールアドレス: {{email}}\n電話番号: {{phone}}\n" },
+        { label: "お問い合わせ内容", condition: null, content: "【お問い合わせ内容】\nカテゴリー: {{category}}\n件名: {{subject}}\nメッセージ:\n{{message}}\n" },
+        { label: "希望する連絡方法", condition: null, content: "【希望する連絡方法】\nご希望の連絡方法: {{contact_method}}\n" }
+      ]
+    },
+    {
+      label: "シンプル版",
+      sections: [
+        { label: "基本情報", condition: null, content: "名前: {{name}}\nメール: {{email}}\n" },
+        { label: "お問い合わせ内容", condition: null, content: "件名: {{subject}}\n内容: {{message}}\n" }
+      ]
+    },
+    {
+      label: "詳細版",
+      sections: [
+        { label: "基本情報", condition: null, content: "=== 基本情報 ===\nお名前: {{name}}\nメールアドレス: {{email}}\n電話番号: {{phone}}\n" },
+        { label: "お問い合わせ内容", condition: null, content: "\n=== お問い合わせ内容 ===\nカテゴリー: {{category}}\n件名: {{subject}}\n\nメッセージ:\n{{message}}\n" },
+        { label: "希望する連絡方法", condition: null, content: "\n=== 連絡先 ===\nご希望の連絡方法: {{contact_method}}\n" }
+      ]
+    }
+  ]
+})
