@@ -1,17 +1,3 @@
-/**
- * @typedef {import('./types').DynamicFormConfig} DynamicFormConfig
- * @typedef {import('./types').DynamicFormSection} DynamicFormSection
- * @typedef {import('./types').DynamicFormField} DynamicFormField
- * @typedef {import('./types').DynamicFormCondition} DynamicFormCondition
- * @typedef {import('./types').FormState} FormState
- */
-
-/**
- * 条件式を評価
- * @param {DynamicFormCondition | null} condition
- * @param {Object} formData
- * @returns {boolean}
- */
 function evaluateCondition(condition, formData) {
   if (!condition) return true;
   if (condition.and) return condition.and.every(expr => formData[expr.field] === expr.value);
@@ -19,12 +5,6 @@ function evaluateCondition(condition, formData) {
   return true;
 }
 
-/**
- * フォーム状態を生成
- * @param {DynamicFormConfig} formConfig
- * @param {Object} formData
- * @returns {FormState}
- */
 function generateFormState(formConfig, formData) {
   const state = {};
 
@@ -48,10 +28,6 @@ function generateFormState(formConfig, formData) {
   return state;
 }
 
-/**
- * フォーム状態を適用
- * @param {FormState} formState
- */
 function applyFormState(formState) {
   Object.entries(formState).forEach(([elementName, state]) => {
     const elementId = state.type === 'section' ? `section-${elementName}` : `field-${elementName}`;
@@ -73,11 +49,6 @@ function applyFormState(formState) {
   });
 }
 
-/**
- * フォームデータを取得
- * @param {HTMLFormElement} form
- * @returns {Object}
- */
 function getFormData(form) {
   const formData = new FormData(form);
   const data = {};
@@ -94,11 +65,6 @@ function getFormData(form) {
   return data;
 }
 
-/**
- * フォームにデータを設定
- * @param {HTMLFormElement} form
- * @param {Object} data
- */
 function setFormData(form, data) {
   if (!data || typeof data !== 'object') return;
 
@@ -125,12 +91,6 @@ function setFormData(form, data) {
   applyFormState(formState);
 }
 
-/**
- * フィールドラベルを作成
- * @param {DynamicFormField} field
- * @param {boolean} isBlock
- * @returns {HTMLLabelElement}
- */
 function createFieldLabel(field, isBlock = false) {
   const $label = $('<label>')
     .addClass(isBlock ? 'form-label d-block' : 'form-label')
@@ -145,20 +105,10 @@ function createFieldLabel(field, isBlock = false) {
   return $label[0];
 }
 
-/**
- * フィールド作成ヘルパー
- * @param {HTMLElement | HTMLSelectElement | HTMLTextAreaElement} element
- * @param {DynamicFormField} field
- */
 function setFieldRequired(element, field) {
   if (field.required) element.required = true;
 }
 
-/**
- * 単一入力フィールドを作成
- * @param {DynamicFormField} field
- * @returns {DocumentFragment}
- */
 function createInputField(field) {
   const $input = $('<input>')
     .attr('type', field.type || 'text')
@@ -171,11 +121,6 @@ function createInputField(field) {
   return $('<div>').append(createFieldLabel(field), $input)[0].childNodes;
 }
 
-/**
- * テキストエリアフィールドを作成
- * @param {DynamicFormField} field
- * @returns {DocumentFragment}
- */
 function createTextareaField(field) {
   const $textarea = $('<textarea>')
     .addClass('form-control')
@@ -188,11 +133,6 @@ function createTextareaField(field) {
   return $('<div>').append(createFieldLabel(field), $textarea)[0].childNodes;
 }
 
-/**
- * セレクトフィールドを作成
- * @param {DynamicFormField} field
- * @returns {DocumentFragment}
- */
 function createSelectField(field) {
   const $select = $('<select>')
     .addClass('form-select')
@@ -213,11 +153,6 @@ function createSelectField(field) {
   return $('<div>').append(createFieldLabel(field), $select)[0].childNodes;
 }
 
-/**
- * ラジオボタンフィールドを作成
- * @param {DynamicFormField} field
- * @returns {DocumentFragment}
- */
 function createRadioField(field) {
   const $container = $('<div>').append(createFieldLabel(field, true));
 
@@ -249,11 +184,6 @@ function createRadioField(field) {
   return $container[0].childNodes;
 }
 
-/**
- * チェックボックスフィールドを作成
- * @param {DynamicFormField} field
- * @returns {DocumentFragment}
- */
 function createCheckboxField(field) {
   const $container = $('<div>').append(createFieldLabel(field, true));
 
@@ -285,11 +215,6 @@ function createCheckboxField(field) {
   return $container[0].childNodes;
 }
 
-/**
- * フィールドを作成
- * @param {DynamicFormField} field
- * @returns {HTMLDivElement}
- */
 function createField(field) {
   const $fieldGroup = $('<div>')
     .addClass('mb-3')
@@ -321,11 +246,6 @@ function createField(field) {
   return $fieldGroup[0];
 }
 
-/**
- * フォームセクションを作成
- * @param {DynamicFormSection} section
- * @returns {HTMLDivElement}
- */
 function createFormSection(section) {
   const $sectionDiv = $('<div>')
     .addClass('mb-4')
@@ -353,37 +273,20 @@ function createFormSection(section) {
   return $sectionDiv[0];
 }
 
-/**
- * 動的フォームクラス
- */
 class DynamicForm {
-  /**
-   * フォームインスタンスを作成
-   * @param {DynamicFormConfig} formConfig
-   * @returns {DynamicForm}
-   */
-  static create(formConfig) {
-    return new DynamicForm(formConfig);
-  }
 
   constructor(formConfig) {
     this.config = formConfig;
-    this.element = this._createFormElement();
-    this._eventListeners = {};
+    this.eventListeners = {};
+    this.element = this.buildForm();
   }
 
-  /**
-   * フォーム要素を作成
-   * @private
-   * @returns {HTMLFormElement}
-   */
-  _createFormElement() {
-    const $form = $('<form>')
-      .attr('id', 'dynamicForm')
-      .addClass('needs-validation');
+  buildForm() {
+    const $element = this.element ? $(this.element).empty() : $('<form>');
+    $element.attr('id', 'dynamicForm').addClass('needs-validation');
 
     this.config.sections.forEach(section => {
-      $form.append(createFormSection(section));
+      $element.append(createFormSection(section));
     });
 
     const $submitButtonDiv = $('<div>').addClass('form-group mt-4');
@@ -393,45 +296,40 @@ class DynamicForm {
       .text('テキストを生成する');
 
     $submitButtonDiv.append($submitButton);
-    $form.append($submitButtonDiv);
+    $element.append($submitButtonDiv);
 
-    const form = $form[0];
+    const form = $element[0];
     form._dynamicFormConfig = this.config;
 
     const initialData = getFormData(form);
     const initialFormState = generateFormState(this.config, initialData);
     applyFormState(initialFormState);
 
-    $form.on('change', 'input, select, textarea', () => {
+    $element.off('change input').on('change', 'input, select, textarea', () => {
       const formData = getFormData(form);
       const formState = generateFormState(this.config, formData);
       applyFormState(formState);
-      this._emit('change', formData);
+      this.emit('change', formData);
+    });
+
+    $element.off('submit').on('submit', (e) => {
+      e.preventDefault();
+      const formData = getFormData(form);
+      this.emit('submit', formData);
     });
 
     return form;
   }
 
-  /**
-   * フォーム値を取得
-   * @returns {Object}
-   */
   getValues() {
     return getFormData(this.element);
   }
 
-  /**
-   * フォーム値を設定
-   * @param {Object} values
-   */
   setValues(values) {
     setFormData(this.element, values);
-    this._emit('change', values);
+    this.emit('change', values);
   }
 
-  /**
-   * フォーム値をリセット
-   */
   resetValues() {
     const inputs = this.element.querySelectorAll('input, select, textarea');
     inputs.forEach(input => {
@@ -445,70 +343,24 @@ class DynamicForm {
     const formData = getFormData(this.element);
     const formState = generateFormState(this.config, formData);
     applyFormState(formState);
-    this._emit('change', formData);
+    this.emit('change', formData);
   }
 
-  /**
-   * フォーム設定を更新
-   * @param {DynamicFormConfig} config
-   */
   setConfiguration(config) {
     this.config = config;
-    const $element = $(this.element).empty().attr('id', 'dynamicForm').addClass('needs-validation');
-
-    config.sections.forEach(section => {
-      $element.append(createFormSection(section));
-    });
-
-    const $submitButtonDiv = $('<div>').addClass('form-group mt-4');
-    const $submitButton = $('<button>')
-      .attr('type', 'submit')
-      .addClass('btn btn-primary w-100')
-      .text('テキストを生成する');
-
-    $submitButtonDiv.append($submitButton);
-    $element.append($submitButtonDiv);
-
-    this.element._dynamicFormConfig = config;
-
-    const initialData = getFormData(this.element);
-    const initialFormState = generateFormState(config, initialData);
-    applyFormState(initialFormState);
-
-    $element.off('change').on('change', 'input, select, textarea', () => {
-      const formData = getFormData(this.element);
-      const formState = generateFormState(config, formData);
-      applyFormState(formState);
-      this._emit('change', formData);
-    });
+    this.buildForm();
   }
 
-  /**
-   * イベントリスナーを登録
-   * @param {string} eventType
-   * @param {Function} callback
-   */
   addEventListener(eventType, callback) {
-    if (!this._eventListeners[eventType]) {
-      this._eventListeners[eventType] = [];
+    if (!this.eventListeners[eventType]) {
+      this.eventListeners[eventType] = [];
     }
-    this._eventListeners[eventType].push(callback);
+    this.eventListeners[eventType].push(callback);
   }
 
-  /**
-   * イベントを発火
-   * @private
-   * @param {string} eventType
-   * @param {*} data
-   */
-  _emit(eventType, data) {
-    if (this._eventListeners[eventType]) {
-      this._eventListeners[eventType].forEach(callback => callback(data));
+  emit(eventType, data) {
+    if (this.eventListeners[eventType]) {
+      this.eventListeners[eventType].forEach(callback => callback(data));
     }
   }
-}
-
-// 後方互換性のための関数ラッパー
-function setupForm(formConfig) {
-  return DynamicForm.create(formConfig).element;
 }

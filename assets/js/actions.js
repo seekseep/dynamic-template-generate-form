@@ -1,27 +1,11 @@
-/**
- * 動的フォームアクション管理クラス
- */
 class DynamicFormActions {
-  /**
-   * アクションインスタンスを作成
-   * @returns {DynamicFormActions}
-   */
-  static create() {
-    return new DynamicFormActions();
-  }
-
   constructor() {
-    this.element = this._createNavbar();
-    this._eventListeners = {};
-    this._setupMenuHandlers();
+    this.eventListeners = {};
+    this.element = this.createNavbar();
+    this.setupMenuHandlers();
   }
 
-  /**
-   * ナビゲーションバーを作成
-   * @private
-   * @returns {HTMLElement}
-   */
-  _createNavbar() {
+  createNavbar() {
     const $nav = $('<nav>').addClass('navbar sticky-top bg-light px-4 py-2 gap-2 justify-content-start');
 
     const $settingsDropdown = $('<div>').addClass('dropdown').html(`
@@ -50,11 +34,7 @@ class DynamicFormActions {
     return $nav[0];
   }
 
-  /**
-   * メニューハンドラーをセットアップ
-   * @private
-   */
-  _setupMenuHandlers() {
+  setupMenuHandlers() {
     // 設定: 読み込む
     this.element.querySelector('#importConfigurationButton').addEventListener('click', (e) => {
       e.preventDefault();
@@ -74,7 +54,7 @@ class DynamicFormActions {
               if (!config.form || !config.templates) {
                 throw new Error('Invalid config format');
               }
-              this._emit('import-configuration', config);
+              this.emit('import-configuration', config);
             } catch (error) {
               alert('設定ファイルの解析に失敗しました: ' + error.message);
             }
@@ -94,7 +74,7 @@ class DynamicFormActions {
     this.element.querySelector('#resetConfigurationButton').addEventListener('click', (e) => {
       e.preventDefault();
       if (confirm('設定をデフォルトにリセットしますか？')) {
-        this._emit('reset-configuration');
+        this.emit('reset-configuration');
       }
     });
 
@@ -116,7 +96,7 @@ class DynamicFormActions {
               if (typeof values !== 'object' || Array.isArray(values)) {
                 throw new Error('Invalid values format');
               }
-              this._emit('import-values', values);
+              this.emit('import-values', values);
             } catch (error) {
               alert('フォーム値の解析に失敗しました: ' + error.message);
             }
@@ -135,39 +115,28 @@ class DynamicFormActions {
     // 入力内容: 書き出す
     this.element.querySelector('#exportFormValuesButton').addEventListener('click', (e) => {
       e.preventDefault();
-      this._emit('export-values');
+      this.emit('export-values');
     });
 
     // 入力内容: リセット
     this.element.querySelector('#resetInputBtn').addEventListener('click', (e) => {
       e.preventDefault();
       if (confirm('入力内容をリセットしますか？')) {
-        this._emit('reset-values');
+        this.emit('reset-values');
       }
     });
   }
 
-  /**
-   * イベントリスナーを登録
-   * @param {string} actionName
-   * @param {Function} callback
-   */
   addEventListener(actionName, callback) {
-    if (!this._eventListeners[actionName]) {
-      this._eventListeners[actionName] = [];
+    if (!this.eventListeners[actionName]) {
+      this.eventListeners[actionName] = [];
     }
-    this._eventListeners[actionName].push(callback);
+    this.eventListeners[actionName].push(callback);
   }
 
-  /**
-   * イベントを発火
-   * @private
-   * @param {string} actionName
-   * @param {*} data
-   */
-  _emit(actionName, data) {
-    if (this._eventListeners[actionName]) {
-      this._eventListeners[actionName].forEach(callback => callback(data));
+  emit(actionName, data) {
+    if (this.eventListeners[actionName]) {
+      this.eventListeners[actionName].forEach(callback => callback(data));
     }
   }
 }
