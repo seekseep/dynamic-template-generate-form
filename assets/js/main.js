@@ -13,7 +13,7 @@ async function main() {
   $("#actionContainer").replaceWith(actions.element)
 
   form.addEventListener('submit', (values) => {
-    renderer.render(configuration.form, values)
+    renderer.render(values)
   })
 
   actions.addEventListener('import-values', (values) => {

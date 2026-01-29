@@ -15,14 +15,12 @@ class DynamicRenderer {
    * @private
    * @param {string} content - テンプレートコンテンツ
    * @param {Object} formData - フォームデータ
-   * @param {Object} labelToNameMap - ラベルとフィールド名のマップ
    * @returns {string} 置換後のコンテンツ
    */
-  _replaceVariables(content, formData, labelToNameMap) {
+  _replaceVariables(content, formData) {
     let result = content;
     result = result.replace(/\{\{(.+?)\}\}/g, (_, key) => {
-      const fieldName = labelToNameMap[key] || key;
-      const value = formData[fieldName];
+      const value = formData[key];
       if (Array.isArray(value)) return value.join(', ');
       return value || '';
     });
@@ -32,27 +30,16 @@ class DynamicRenderer {
   /**
    * テンプレートをレンダリング
    * @private
-   * @param {Object} formConfig - フォーム設定
    * @param {Object} template - テンプレート
    * @param {Object} formData - フォームデータ
    * @returns {string} レンダリング結果
    */
-  _renderTemplate(formConfig, template, formData) {
-    const labelToNameMap = {};
-    formConfig.sections.forEach(section => {
-      section.fields.forEach(fieldOrArray => {
-        const fieldsToProcess = Array.isArray(fieldOrArray) ? fieldOrArray : [fieldOrArray];
-        fieldsToProcess.forEach(field => {
-          labelToNameMap[field.label] = field.name;
-        });
-      });
-    });
-
+  _renderTemplate(template, formData) {
     let output = '';
     template.sections.forEach(section => {
       const isVisible = evaluateCondition(section.condition, formData);
       if (isVisible) {
-        const content = this._replaceVariables(section.content, formData, labelToNameMap);
+        const content = this._replaceVariables(section.content, formData);
         output += content;
       }
     });
@@ -63,15 +50,14 @@ class DynamicRenderer {
   /**
    * 複数のテンプレートをレンダリング
    * @private
-   * @param {Object} formConfig - フォーム設定
    * @param {Array<Object>} templates - テンプレート一覧
    * @param {Object} formData - フォームデータ
    * @returns {Object} レンダリング結果
    */
-  _renderTemplates(formConfig, templates, formData) {
+  _renderTemplates(templates, formData) {
     const results = {};
     templates.forEach(template => {
-      results[template.label] = this._renderTemplate(formConfig, template, formData);
+      results[template.label] = this._renderTemplate(template, formData);
     });
     return results;
   }
@@ -155,11 +141,10 @@ class DynamicRenderer {
 
   /**
    * テンプレートをレンダリングして表示
-   * @param {Object} formConfig - フォーム設定
    * @param {Object} formValues - フォーム値
    */
-  render(formConfig, formValues) {
-    const outputs = this._renderTemplates(formConfig, this.templates, formValues);
+  render(formValues) {
+    const outputs = this._renderTemplates(this.templates, formValues);
 
     this.templates.forEach((template, index) => {
       const $pre = $(this.element).find(`pre[data-template-index="${index}"]`);
