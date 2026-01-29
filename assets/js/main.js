@@ -1,95 +1,63 @@
-async function main () {
-  // localStorage から設定を読み込む（失敗時は config.js がデフォルト）
-  const configData = loadConfig() ?? defaultConfig;
+/**
+ * メイン初期化関数
+ */
+async function main() {
+  // 1. 設定を読み込む
+  const storage = DynamicStorage.create();
+  const savedConfig = storage.loadConfiguration();
+  const configData = savedConfig || DynamicDefaultConfig.get();
+  const dynamicConfiguration = DynamicConfiguration.create(configData);
 
-  const dynamicForm = createDynamicForm(configData.form)
-  const dynamicTemplates = createDynamicTemplates(configData.templates)
-  const form = setupForm(dynamicForm)
+  // 2. ファクトリーでフォーム設定とテンプレート設定を解析
+  const formConfig = DynamicFormFactory.create(dynamicConfiguration.form);
+  const templateConfigs = DynamicTemplatesFactory.create(dynamicConfiguration.templates);
 
-  // フォームを DOM に追加
-  const container = document.getElementById('inputFormContainer');
-  if (!container) {
-    console.error('Container with id "inputFormContainer" not found');
+  // 3. フォームとレンダラーを作成
+  const dynamicForm = DynamicForm.create(formConfig);
+  const dynamicRenderer = DynamicRenderer.create(templateConfigs);
+
+  // 4. メニューアクションを作成
+  const dynamicFormActions = DynamicFormActions.create();
+
+  // 5. エクスポーターを作成
+  const dynamicExporter = DynamicExporter.create();
+
+  // 6. 要素をDOMに挿入
+  const formContainer = document.getElementById('formContainer');
+  const rendererContainer = document.getElementById('rendererContainer');
+
+  if (!formContainer || !rendererContainer) {
+    console.error('Required DOM containers not found');
     return;
   }
-  container.appendChild(form);
 
-  // テンプレートタブのセットアップ
-  const templateTabs = document.getElementById('templateTabs');
-  const templateTabContent = document.getElementById('templateTabContent');
-  if (!templateTabs || !templateTabContent) {
-    console.error('Template tab elements not found');
-    return;
+  formContainer.appendChild(dynamicForm.element);
+  rendererContainer.appendChild(dynamicRenderer.element);
+
+  // 7. ナビゲーションを挿入
+  const nav = document.querySelector('nav.navbar');
+  if (nav) {
+    nav.replaceWith(dynamicFormActions.element);
   }
 
-  // タブを作成
-  dynamicTemplates.forEach((template, index) => {
-    const tabId = `template-tab-${index}`;
-    const contentId = `template-content-${index}`;
-
-    // タブボタン
-    const tabItem = document.createElement('li');
-    tabItem.className = 'nav-item';
-    tabItem.setAttribute('role', 'presentation');
-
-    const tabButton = document.createElement('button');
-    tabButton.className = `nav-link ${index === 0 ? 'active' : ''}`;
-    tabButton.id = tabId;
-    tabButton.setAttribute('data-bs-toggle', 'tab');
-    tabButton.setAttribute('data-bs-target', `#${contentId}`);
-    tabButton.setAttribute('type', 'button');
-    tabButton.setAttribute('role', 'tab');
-    tabButton.textContent = template.label;
-
-    tabItem.appendChild(tabButton);
-    templateTabs.appendChild(tabItem);
-
-    // タブコンテンツ
-    const tabPane = document.createElement('div');
-    tabPane.className = `tab-pane fade ${index === 0 ? 'show active' : ''}`;
-    tabPane.id = contentId;
-    tabPane.setAttribute('role', 'tabpanel');
-    tabPane.style.overflow = 'auto';
-    tabPane.style.flex = '1';
-
-    const pre = document.createElement('pre');
-    pre.style.cssText = 'white-space: pre-wrap; word-wrap: break-word; min-height: 400px; margin: 0;';
-    pre.className = 'template-output';
-    pre.setAttribute('data-template-index', index);
-
-    tabPane.appendChild(pre);
-    templateTabContent.appendChild(tabPane);
-  });
-
-  // フォーム送信時（生成ボタン）
-  form.addEventListener('submit', (event) => {
+  // 8. フォーム送信時のハンドラー
+  dynamicForm.element.addEventListener('submit', (event) => {
     event.preventDefault();
-    // テンプレートを生成
-    const formData = getFormData(form);
-    const outputs = renderTemplates(dynamicForm, dynamicTemplates, formData);
-
-    // 各テンプレートの出力をタブに反映
-    dynamicTemplates.forEach((template, index) => {
-      const pre = document.querySelector(`pre[data-template-index="${index}"]`);
-      if (pre) {
-        pre.textContent = outputs[template.label];
-      }
-    });
+    const formValues = dynamicForm.getValues();
+    dynamicRenderer.render(formConfig, formValues);
   });
 
-  // コピーボタン
-  const copyButton = document.getElementById('copyButton');
+  // 9. コピーボタンのハンドラー
+  const copyButton = dynamicRenderer.getCopyButton();
   if (copyButton) {
     copyButton.addEventListener('click', () => {
-      // アクティブなタブのテキストをコピー
-      const activePane = templateTabContent.querySelector('.tab-pane.active');
+      const activePane = dynamicRenderer.element.querySelector('.tab-pane.active');
       if (!activePane) {
         alert('コピーするテンプレートがありません');
         return;
       }
       const text = activePane.querySelector('pre').textContent;
       navigator.clipboard.writeText(text).then(() => {
-        // フィードバック表示（オプション）
         const originalText = copyButton.textContent;
         copyButton.textContent = 'コピーしました!';
         setTimeout(() => {
@@ -101,109 +69,57 @@ async function main () {
     });
   }
 
-  // データ読込ボタン
-  const loadDataBtn = document.getElementById('loadDataBtn');
-  if (loadDataBtn) {
-    loadDataBtn.addEventListener('click', () => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.json';
-      input.onchange = (e) => {
-        try {
-          const file = e.target.files[0];
-          if (!file) return;
+  // 10. アクション: フォーム値をインポート
+  dynamicFormActions.addEventListener('import-values', (values) => {
+    dynamicForm.setValues(values);
+  });
 
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            try {
-              const data = JSON.parse(event.target.result);
-              setFormData(form, data);
-            } catch (error) {
-              alert('JSONの解析に失敗しました: ' + error.message);
-            }
-          };
-          reader.onerror = () => {
-            alert('ファイルの読み込みに失敗しました');
-          };
-          reader.readAsText(file);
-        } catch (error) {
-          alert('データの読み込みに失敗しました: ' + error.message);
-        }
-      };
-      input.click();
-    });
-  }
+  // 11. アクション: フォーム値をエクスポート
+  dynamicFormActions.addEventListener('export-values', () => {
+    const values = dynamicForm.getValues();
+    dynamicExporter.exportValues(values);
+  });
 
-  // インポートボタン
-  const importFormBtn = document.getElementById('importFormBtn');
-  if (importFormBtn) {
-    importFormBtn.addEventListener('click', () => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.json';
-      input.onchange = async (e) => {
-        try {
-          await importConfig(e.target.files[0]);
-          // 設定再構築
-          location.reload();
-        } catch (error) {
-          alert('インポートに失敗しました: ' + error.message);
-        }
-      };
-      input.click();
-    });
-  }
+  // 12. アクション: フォーム値をリセット
+  dynamicFormActions.addEventListener('reset-values', () => {
+    dynamicForm.resetValues();
+  });
 
-
-  // リセットボタン
-  const resetFormBtn = document.getElementById('resetFormBtn');
-  if (resetFormBtn) {
-    resetFormBtn.addEventListener('click', () => {
-      if (confirm('設定をデフォルトにリセットしますか？')) {
-        resetConfig();
-        location.reload();
+  // 13. アクション: 設定をインポート
+  dynamicFormActions.addEventListener('import-configuration', (config) => {
+    try {
+      // バリデーション
+      if (!config.form || !config.templates) {
+        throw new Error('Invalid configuration format');
       }
-    });
-  }
 
-  // テンプレート インポートボタン
-  const importTemplateBtn = document.getElementById('importTemplateBtn');
-  if (importTemplateBtn) {
-    importTemplateBtn.addEventListener('click', () => {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.json';
-      input.onchange = async (e) => {
-        try {
-          await importConfig(e.target.files[0]);
-          // 設定再構築
-          location.reload();
-        } catch (error) {
-          alert('インポートに失敗しました: ' + error.message);
-        }
-      };
-      input.click();
-    });
-  }
+      // 設定を更新
+      const newFormConfig = DynamicFormFactory.create(config.form);
+      const newTemplateConfigs = DynamicTemplatesFactory.create(config.templates);
 
-  // テンプレート エクスポートボタン
-  const exportTemplateBtn = document.getElementById('exportTemplateBtn');
-  if (exportTemplateBtn) {
-    exportTemplateBtn.addEventListener('click', () => {
-      exportConfig(configData);
-    });
-  }
+      dynamicForm.setConfiguration(newFormConfig);
+      dynamicRenderer.setConfiguration(newTemplateConfigs);
+      storage.saveConfiguration(config);
 
-  // テンプレート リセットボタン
-  const resetTemplateBtn = document.getElementById('resetTemplateBtn');
-  if (resetTemplateBtn) {
-    resetTemplateBtn.addEventListener('click', () => {
-      if (confirm('設定をデフォルトにリセットしますか？')) {
-        resetConfig();
-        location.reload();
-      }
-    });
-  }
+      // ローカルストレージも更新
+      saveConfig(config);
+
+      alert('設定をインポートしました');
+    } catch (error) {
+      alert('設定のインポートに失敗しました: ' + error.message);
+    }
+  });
+
+  // 14. アクション: 設定をリセット
+  dynamicFormActions.addEventListener('reset-configuration', () => {
+    storage.clearConfiguration();
+    location.reload();
+  });
 }
 
-main()
+// ページ読み込み完了後に初期化
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', main);
+} else {
+  main();
+}
