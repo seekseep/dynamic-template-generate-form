@@ -1,23 +1,13 @@
-/**
- * 動的レンダラークラス
- * @property {Array<DynamicTemplate>} templates - テンプレート設定一覧
- * @property {HTMLDivElement} element - レンダラーコンテナ要素
- */
 class DynamicRenderer {
+  static COPY_FEEDBACK_DURATION = 2000;
+
   constructor(templates) {
     this.templates = templates;
     this.element = $('<div>').addClass('card d-flex flex-column h-100 overflow-hidden')[0];
-    this._buildTabUI();
+    this.buildUI();
   }
 
-  /**
-   * テンプレートコンテンツの {{変数}} を置換
-   * @private
-   * @param {string} content - テンプレートコンテンツ
-   * @param {Object} formData - フォームデータ
-   * @returns {string} 置換後のコンテンツ
-   */
-  _replaceVariables(content, formData) {
+  replaceVariables(content, formData) {
     let result = content;
     result = result.replace(/\{\{(.+?)\}\}/g, (_, key) => {
       const value = formData[key];
@@ -27,19 +17,12 @@ class DynamicRenderer {
     return result;
   }
 
-  /**
-   * テンプレートをレンダリング
-   * @private
-   * @param {Object} template - テンプレート
-   * @param {Object} formData - フォームデータ
-   * @returns {string} レンダリング結果
-   */
-  _renderTemplate(template, formData) {
+  renderTemplate(template, formData) {
     let output = '';
     template.sections.forEach(section => {
       const isVisible = evaluateCondition(section.condition, formData);
       if (isVisible) {
-        const content = this._replaceVariables(section.content, formData);
+        const content = this.replaceVariables(section.content, formData);
         output += content;
       }
     });
@@ -47,26 +30,15 @@ class DynamicRenderer {
     return output;
   }
 
-  /**
-   * 複数のテンプレートをレンダリング
-   * @private
-   * @param {Array<Object>} templates - テンプレート一覧
-   * @param {Object} formData - フォームデータ
-   * @returns {Object} レンダリング結果
-   */
-  _renderTemplates(templates, formData) {
+  renderTemplates(templates, formData) {
     const results = {};
     templates.forEach(template => {
-      results[template.label] = this._renderTemplate(template, formData);
+      results[template.label] = this.renderTemplate(template, formData);
     });
     return results;
   }
 
-  /**
-   * タブUI を構築
-   * @private
-   */
-  _buildTabUI() {
+  buildUI() {
     const $element = $(this.element).empty();
 
     const $tabNav = $('<ul>').addClass('nav nav-tabs').attr('role', 'tablist');
@@ -111,7 +83,6 @@ class DynamicRenderer {
 
     $element.append($tabNav, $tabContent);
 
-    // コピーボタンのイベントハンドラを設定
     $(this.element).on('click', '.btn.btn-primary.btn-sm', function() {
       const $button = $(this);
       const $tabPane = $button.closest('.tab-pane');
@@ -124,27 +95,19 @@ class DynamicRenderer {
           $button.text('コピーしました！');
           setTimeout(() => {
             $button.text(originalText);
-          }, 2000);
+          }, DynamicRenderer.COPY_FEEDBACK_DURATION);
         });
       }
     });
   }
 
-  /**
-   * テンプレート設定を更新
-   * @param {Array<DynamicTemplate>} templates
-   */
   setConfiguration(templates) {
     this.templates = templates;
-    this._buildTabUI();
+    this.buildUI();
   }
 
-  /**
-   * テンプレートをレンダリングして表示
-   * @param {Object} formValues - フォーム値
-   */
   render(formValues) {
-    const outputs = this._renderTemplates(this.templates, formValues);
+    const outputs = this.renderTemplates(this.templates, formValues);
 
     this.templates.forEach((template, index) => {
       const $pre = $(this.element).find(`pre[data-template-index="${index}"]`);
