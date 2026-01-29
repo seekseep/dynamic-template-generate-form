@@ -1,50 +1,79 @@
-function replaceVariables(content, formData, labelToNameMap) {
-  let result = content;
-  result = result.replace(/\{\{(.+?)\}\}/g, (_, key) => {
-    const fieldName = labelToNameMap[key] || key;
-    const value = formData[fieldName];
-    if (Array.isArray(value)) return value.join(', ');
-    return value || '';
-  });
-  return result;
-}
-
-function renderTemplate(formConfig, template, formData) {
-  const labelToNameMap = {};
-  formConfig.sections.forEach(section => {
-    section.fields.forEach(fieldOrArray => {
-      const fieldsToProcess = Array.isArray(fieldOrArray) ? fieldOrArray : [fieldOrArray];
-      fieldsToProcess.forEach(field => {
-        labelToNameMap[field.label] = field.name;
-      });
-    });
-  });
-
-  let output = '';
-  template.sections.forEach(section => {
-    const isVisible = evaluateCondition(section.condition, formData);
-    if (isVisible) {
-      const content = replaceVariables(section.content, formData, labelToNameMap);
-      output += content;
-    }
-  });
-
-  return output;
-}
-
-function renderTemplates(formConfig, templates, formData) {
-  const results = {};
-  templates.forEach(template => {
-    results[template.label] = renderTemplate(formConfig, template, formData);
-  });
-  return results;
-}
-
+/**
+ * 動的レンダラークラス
+ * @property {Array<DynamicTemplate>} templates - テンプレート設定一覧
+ * @property {HTMLDivElement} element - レンダラーコンテナ要素
+ */
 class DynamicRenderer {
   constructor(templates) {
     this.templates = templates;
     this.element = $('<div>').addClass('card d-flex flex-column h-100 overflow-hidden')[0];
     this._buildTabUI();
+  }
+
+  /**
+   * テンプレートコンテンツの {{変数}} を置換
+   * @private
+   * @param {string} content - テンプレートコンテンツ
+   * @param {Object} formData - フォームデータ
+   * @param {Object} labelToNameMap - ラベルとフィールド名のマップ
+   * @returns {string} 置換後のコンテンツ
+   */
+  _replaceVariables(content, formData, labelToNameMap) {
+    let result = content;
+    result = result.replace(/\{\{(.+?)\}\}/g, (_, key) => {
+      const fieldName = labelToNameMap[key] || key;
+      const value = formData[fieldName];
+      if (Array.isArray(value)) return value.join(', ');
+      return value || '';
+    });
+    return result;
+  }
+
+  /**
+   * テンプレートをレンダリング
+   * @private
+   * @param {Object} formConfig - フォーム設定
+   * @param {Object} template - テンプレート
+   * @param {Object} formData - フォームデータ
+   * @returns {string} レンダリング結果
+   */
+  _renderTemplate(formConfig, template, formData) {
+    const labelToNameMap = {};
+    formConfig.sections.forEach(section => {
+      section.fields.forEach(fieldOrArray => {
+        const fieldsToProcess = Array.isArray(fieldOrArray) ? fieldOrArray : [fieldOrArray];
+        fieldsToProcess.forEach(field => {
+          labelToNameMap[field.label] = field.name;
+        });
+      });
+    });
+
+    let output = '';
+    template.sections.forEach(section => {
+      const isVisible = evaluateCondition(section.condition, formData);
+      if (isVisible) {
+        const content = this._replaceVariables(section.content, formData, labelToNameMap);
+        output += content;
+      }
+    });
+
+    return output;
+  }
+
+  /**
+   * 複数のテンプレートをレンダリング
+   * @private
+   * @param {Object} formConfig - フォーム設定
+   * @param {Array<Object>} templates - テンプレート一覧
+   * @param {Object} formData - フォームデータ
+   * @returns {Object} レンダリング結果
+   */
+  _renderTemplates(formConfig, templates, formData) {
+    const results = {};
+    templates.forEach(template => {
+      results[template.label] = this._renderTemplate(formConfig, template, formData);
+    });
+    return results;
   }
 
   /**
@@ -78,23 +107,41 @@ class DynamicRenderer {
         .attr('data-template-index', index)
         .css({ 'white-space': 'pre-wrap', 'word-wrap': 'break-word', 'min-height': '400px', 'margin': '0' });
 
+      const $copyButton = $('<button>')
+        .addClass('btn btn-primary btn-sm')
+        .attr('type', 'button')
+        .text('コピー')
+        .css({ 'margin-top': '8px', 'margin-bottom': '8px' });
+
       const $tabPane = $('<div>')
         .addClass(`tab-pane bg-white fade ${index === 0 ? 'show active' : ''}`)
         .attr('id', contentId)
         .attr('role', 'tabpanel')
-        .css({ 'overflow': 'auto', 'flex': '1' })
-        .append($pre);
+        .css({ 'overflow': 'auto', 'flex': '1', 'display': 'flex', 'flex-direction': 'column' })
+        .append($pre, $copyButton);
 
       $tabContent.append($tabPane);
     });
 
-    const $copyButton = $('<button>')
-      .attr('id', 'copyButton')
-      .addClass('btn btn-primary d-block m-2')
-      .text('クリップボードにコピー')
-      .prop('disabled', true);
+    $element.append($tabNav, $tabContent);
 
-    $element.append($tabNav, $tabContent, $copyButton);
+    // コピーボタンのイベントハンドラを設定
+    $(this.element).on('click', '.btn.btn-primary.btn-sm', function() {
+      const $button = $(this);
+      const $tabPane = $button.closest('.tab-pane');
+      const $pre = $tabPane.find('.renderer-output');
+
+      if ($pre.length) {
+        const text = $pre.text();
+        navigator.clipboard.writeText(text).then(() => {
+          const originalText = $button.text();
+          $button.text('コピーしました！');
+          setTimeout(() => {
+            $button.text(originalText);
+          }, 2000);
+        });
+      }
+    });
   }
 
   /**
@@ -106,20 +153,20 @@ class DynamicRenderer {
     this._buildTabUI();
   }
 
+  /**
+   * テンプレートをレンダリングして表示
+   * @param {Object} formConfig - フォーム設定
+   * @param {Object} formValues - フォーム値
+   */
   render(formConfig, formValues) {
-    const outputs = renderTemplates(formConfig, this.templates, formValues);
+    const outputs = this._renderTemplates(formConfig, this.templates, formValues);
 
     this.templates.forEach((template, index) => {
-      const pre = this.element.querySelector(`pre[data-template-index="${index}"]`);
-      if (pre) {
-        pre.textContent = outputs[template.label];
+      const $pre = $(this.element).find(`pre[data-template-index="${index}"]`);
+      if ($pre.length) {
+        $pre.text(outputs[template.label]);
       }
     });
-
-    const copyButton = this.element.querySelector('#copyButton');
-    if (copyButton) {
-      copyButton.disabled = false;
-    }
   }
 
 }
