@@ -30,7 +30,10 @@ dynamic-template-generate-form/
 │   ├── order/
 │   └── support/
 ├── docs/                   # ドキュメント（実行に不要）
-│   └── AGENTS.md           # AI アシスタント向けドキュメント
+│   ├── AGENTS.md           # AI アシスタント向けエントリーポイント
+│   ├── CONFIGURATION.md    # 設定ファイルの書き方
+│   ├── VALUES.md           # 値ファイルの書き方
+│   └── CODE.md             # コード変更ガイド
 ├── .github/                # GitHub Actions設定（実行に不要）
 └── README.md               # このファイル（実行に不要）
 ```
