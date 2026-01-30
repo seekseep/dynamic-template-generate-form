@@ -1,120 +1,164 @@
-/**
- * @typedef {import('./types').DynamicForm} DynamicForm
- * @typedef {import('./types').DynamicTemplate} DynamicTemplate
- */
-
-/**
- * デフォルト設定クラス
- */
-class DynamicDefaultConfig {
-  static get() {
-    return {
-      form: {
-        sections: [
-          {
-            label: "基本情報",
-            condition: null,
-            fields: [
-              { label: "お名前", type: "text", required: true },
-              { label: "メールアドレス", type: "email", required: true },
-              { label: "電話番号", type: "tel", required: false }
-            ]
-          },
-          {
-            label: "お問い合わせ内容",
-            condition: null,
-            fields: [
-              {
-                label: "カテゴリー",
-                type: "select",
-                required: true,
-                options: ["-- 選択してください --", "一般的な質問", "技術サポート", "営業に関する質問", "その他"]
-              },
-              { label: "件名", type: "text", required: true },
-              { label: "メッセージ", type: "textarea", required: true }
-            ]
-          },
-          {
-            label: "希望する連絡方法",
-            condition: null,
-            fields: [
-              { label: "ご希望の連絡方法", type: "radio", required: true, options: ["メール", "電話", "SMS"] }
-            ]
-          }
-        ]
-      },
-      templates: [
-        {
-          label: "標準テンプレート",
-          sections: [
-            { label: "基本情報", condition: null, content: "【基本情報】\nお名前: {{name}}\nメールアドレス: {{email}}\n電話番号: {{phone}}\n" },
-            { label: "お問い合わせ内容", condition: null, content: "【お問い合わせ内容】\nカテゴリー: {{category}}\n件名: {{subject}}\nメッセージ:\n{{message}}\n" },
-            { label: "希望する連絡方法", condition: null, content: "【希望する連絡方法】\nご希望の連絡方法: {{contact_method}}\n" }
-          ]
-        },
-        {
-          label: "シンプル版",
-          sections: [
-            { label: "基本情報", condition: null, content: "名前: {{name}}\nメール: {{email}}\n" },
-            { label: "お問い合わせ内容", condition: null, content: "件名: {{subject}}\n内容: {{message}}\n" }
-          ]
-        },
-        {
-          label: "詳細版",
-          sections: [
-            { label: "基本情報", condition: null, content: "=== 基本情報 ===\nお名前: {{name}}\nメールアドレス: {{email}}\n電話番号: {{phone}}\n" },
-            { label: "お問い合わせ内容", condition: null, content: "\n=== お問い合わせ内容 ===\nカテゴリー: {{category}}\n件名: {{subject}}\n\nメッセージ:\n{{message}}\n" },
-            { label: "希望する連絡方法", condition: null, content: "\n=== 連絡先 ===\nご希望の連絡方法: {{contact_method}}\n" }
-          ]
-        }
-      ]
-    }
+class DynamicFormConditionExpressionConfiguration {
+  constructor(name, value) {
+    this.name = name;
+    this.value = value;
   }
 }
 
-/**
- * 動的フォーム設定管理クラス
- */
-class DynamicConfiguration {
-  /**
-   * 設定インスタンスを作成
-   * @param {Object} configData - フォームとテンプレート設定
-   * @returns {DynamicConfiguration}
-   */
-  static create(configData) {
-    return new DynamicConfiguration(configData);
+class DynamicFormConditionConfiguration {
+  static create(value) {
+    if (typeof value === 'undefined' || value === null) {
+      return new DynamicFormConditionConfiguration();
+    }
+
+    if (Array.isArray(value)) {
+      return new DynamicFormConditionConfiguration({
+        and: value.map(expr => new DynamicFormConditionExpressionConfiguration(expr.field, expr.value))
+      });
+    }
+
+    if (value && Array.isArray(value.and)) {
+      return new DynamicFormConditionConfiguration({
+        and: value.and.map(expr => new DynamicFormConditionExpressionConfiguration(expr.field, expr.value))
+      });
+    }
+
+    if (value && Array.isArray(value.or)) {
+      return new DynamicFormConditionConfiguration({
+        or: value.or.map(expr => new DynamicFormConditionExpressionConfiguration(expr.field, expr.value))
+      });
+    }
+
+    return new DynamicFormConditionConfiguration();
   }
 
-  constructor(configData) {
-    this.data = configData;
+  constructor({ and, or } = {}) {
+    this.and = and;
+    this.or = or;
   }
 
-  /**
-   * フォーム設定を取得
-   */
-  get form() {
-    return this.data.form;
+  match(formData) {
+    if (this.and) {
+      return this.and.every(expr => formData[expr.name] === expr.value);
+    }
+    if (this.or) {
+      return this.or.some(expr => formData[expr.name] === expr.value);
+    }
+    return true;
+  }
+}
+
+class DynamicFormOptionConfiguration {
+  static create(value) {
+    if (typeof value === 'string') {
+      return {
+        value: value,
+        label: value,
+      };
+    }
+
+    return {
+      value: value.value || value.label || '',
+      label: value.label || '',
+    };
   }
 
-  /**
-   * テンプレート設定を取得
-   */
-  get templates() {
-    return this.data.templates;
+  constructor(value, label) {
+    this.value = value;
+    this.label = label;
+  }
+}
+
+class DynamicFormFieldConfiguration {
+  static create(value) {
+    return {
+      name: value.name || value.label || '',
+      label: value.label || value.name || '',
+      type: value.type || 'text',
+      required: value.required || false,
+      options: (value.options || []).map(opt => DynamicFormOptionConfiguration.create(opt)),
+      condition: DynamicFormConditionConfiguration.create(value.condition)
+    };
   }
 
-  /**
-   * すべての設定を取得
-   */
-  getAll() {
-    return this.data;
+  constructor(name, label, type, required, options, condition) {
+    this.name = name;
+    this.label = label;
+    this.type = type;
+    this.required = required;
+    this.options = options;
+    this.condition = condition;
+  }
+}
+
+class DynamicFormSectionConfiguration {
+  static create(value) {
+    return {
+      name: value.name || value.label || '',
+      label: value.label || '',
+      condition: DynamicFormConditionConfiguration.create(value.condition),
+      fields: (value.fields || []).map(field => {
+        if (Array.isArray(field)) {
+          return field.map(f => DynamicFormFieldConfiguration.create(f));
+        }
+        return DynamicFormFieldConfiguration.create(field);
+      })
+    };
   }
 
-  /**
-   * 設定を更新
-   * @param {Object} newData
-   */
-  update(newData) {
-    this.data = newData;
+  constructor(name, label, condition, fields) {
+    this.name = name;
+    this.label = label;
+    this.condition = condition;
+    this.fields = fields;
+  }
+}
+
+class DynamicFormConfiguration {
+  static create(value) {
+    return {
+      sections: (value.sections || []).map(section => DynamicFormSectionConfiguration.create(section))
+    };
+  }
+}
+
+class DynamicTemplateSectionConfiguration {
+  static create(value) {
+    return {
+      name: value.name || value.label || '',
+      label: value.label || '',
+      condition: DynamicFormConditionConfiguration.create(value.condition),
+      content: value.content || ''
+    };
+  }
+
+  constructor(name, label, condition, content) {
+    this.name = name;
+    this.label = label;
+    this.condition = condition;
+    this.content = content;
+  }
+}
+
+class DynamicTemplateConfiguration {
+  static create(value) {
+    return {
+      label: value.label || '名称未設定',
+      sections: (value.sections || []).map(section => DynamicTemplateSectionConfiguration.create(section))
+    };
+  }
+}
+
+class GeneratorConfiguration {
+  static create(value) {
+    return new GeneratorConfiguration(
+      DynamicFormConfiguration.create(value.form),
+      value.templates.map(template => DynamicTemplateConfiguration.create(template))
+    );
+  }
+
+  constructor(form, templates) {
+    this.form = form;
+    this.templates = templates;
   }
 }

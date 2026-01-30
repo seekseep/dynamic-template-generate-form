@@ -12,12 +12,12 @@ async function main() {
   $("#rendererContainer").append(renderer.element)
   $("#actionContainer").replaceWith(actions.element)
 
-  form.addEventListener('submit', (values) => {
-    renderer.render(values)
+  form.addEventListener('submit', (event) => {
+    renderer.render(event.detail)
   })
 
-  actions.addEventListener('import-values', (values) => {
-    form.setValues(values)
+  actions.addEventListener('import-values', (event) => {
+    form.setValues(event.detail)
   })
 
   actions.addEventListener('export-values', () => {
@@ -29,7 +29,9 @@ async function main() {
     form.resetValues()
   })
 
-  actions.addEventListener('import-configuration', (configuration) => {
+  actions.addEventListener('import-configuration', (event) => {
+    const configuration = event.detail
+    console.log({configuration})
     form.setConfiguration(configuration.form)
     renderer.setConfiguration(configuration.templates)
     storage.saveConfiguration(configuration)

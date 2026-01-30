@@ -3,46 +3,47 @@ class DynamicRenderer {
 
   constructor(templates) {
     this.templates = templates;
-    this.element = $('<div>').addClass('card d-flex flex-column h-100 overflow-hidden')[0];
+    const $root = $('<div>')
+      .addClass('root p-4 h-100 overflow-hidden');
+    const $card = $('<div>')
+      .addClass('card overflow-hidden h-100 d-flex flex-column');
+    $root.append($card);
+    this.element = $root[0];
+    this.cardElement = $card;
     this.buildUI();
   }
 
-  replaceVariables(content, formData) {
+  replaceVariables(content, formValues) {
+    console.log('replaceVariables called with:', { content, formValues });
     let result = content;
     result = result.replace(/\{\{(.+?)\}\}/g, (_, key) => {
-      const value = formData[key];
+      const trimmedKey = key.trim();
+      const value = formValues[trimmedKey];
+      console.log(`Replacing {{${key}}} -> trimmedKey: "${trimmedKey}", value:`, value);
       if (Array.isArray(value)) return value.join(', ');
       return value || '';
     });
+    console.log('replaceVariables result:', result);
     return result;
   }
 
-  renderTemplate(template, formData) {
+  renderTemplate(template, formValues) {
     let output = '';
     template.sections.forEach(section => {
-      const isVisible = evaluateCondition(section.condition, formData);
-      if (isVisible) {
-        const content = this.replaceVariables(section.content, formData);
-        output += content;
-      }
+      const isVisible = section.condition.match(formValues);
+      if (!isVisible) return
+      const content = this.replaceVariables(section.content, formValues);
+      output += content;
     });
 
     return output;
   }
 
-  renderTemplates(templates, formData) {
-    const results = {};
-    templates.forEach(template => {
-      results[template.label] = this.renderTemplate(template, formData);
-    });
-    return results;
-  }
-
   buildUI() {
-    const $element = $(this.element).empty();
+    const $element = $(this.cardElement).empty();
 
     const $tabNav = $('<ul>').addClass('nav nav-tabs').attr('role', 'tablist');
-    const $tabContent = $('<div>').addClass('tab-content flex-grow-1 overflow-hidden d-flex flex-column').css('flexDirection', 'column');
+    const $tabContent = $('<div>').addClass('tab-content flex-grow-1 overflow-hidden d-flex flex-column');
 
     this.templates.forEach((template, index) => {
       const tabId = `renderer-tab-${index}`;
@@ -50,7 +51,7 @@ class DynamicRenderer {
 
       const $tabButton = $('<button>')
         .addClass(`nav-link ${index === 0 ? 'active' : ''}`)
-        .id(tabId)
+        .attr('id', tabId)
         .attr('data-bs-toggle', 'tab')
         .attr('data-bs-target', `#${contentId}`)
         .attr('type', 'button')
@@ -60,61 +61,64 @@ class DynamicRenderer {
       const $tabItem = $('<li>').addClass('nav-item').attr('role', 'presentation').append($tabButton);
       $tabNav.append($tabItem);
 
-      const $pre = $('<pre>')
-        .addClass('renderer-output')
+      const $textarea = $('<textarea>')
+        .addClass('flex-grow-1 m-0 renderer-output border-0 p-3')
         .attr('data-template-index', index)
-        .css({ 'white-space': 'pre-wrap', 'word-wrap': 'break-word', 'min-height': '400px', 'margin': '0' });
+        .css({ 'white-space': 'pre-wrap', 'word-wrap': 'break-word', 'min-height': '400px', 'resize': 'none' });
 
       const $copyButton = $('<button>')
-        .addClass('btn btn-primary btn-sm')
+        .addClass('btn btn-primary btn-sm mt-2 mb-2 mx-2')
         .attr('type', 'button')
         .text('コピー')
-        .css({ 'margin-top': '8px', 'margin-bottom': '8px' });
+        .on('click', function() {
+          const $button = $(this);
+          const $tabPane = $button.closest('.tab-pane');
+          const $pre = $tabPane.find('.renderer-output');
+
+          if ($pre.length) {
+            const text = $pre.val();
+            navigator.clipboard.writeText(text).then(() => {
+              const originalText = $button.text();
+              $button.text('コピーしました！');
+              setTimeout(() => {
+                $button.text(originalText);
+              }, DynamicRenderer.COPY_FEEDBACK_DURATION);
+            });
+          }
+        });
 
       const $tabPane = $('<div>')
-        .addClass(`tab-pane bg-white fade ${index === 0 ? 'show active' : ''}`)
+        .addClass(`tab-pane bg-white overflow-auto d-flex flex-column flex-grow-1 ${index === 0 ? 'show active' : 'd-none'}`)
         .attr('id', contentId)
         .attr('role', 'tabpanel')
-        .css({ 'overflow': 'auto', 'flex': '1', 'display': 'flex', 'flex-direction': 'column' })
-        .append($pre, $copyButton);
+        .append($textarea, $copyButton);
 
       $tabContent.append($tabPane);
     });
 
     $element.append($tabNav, $tabContent);
 
-    $(this.element).on('click', '.btn.btn-primary.btn-sm', function() {
-      const $button = $(this);
-      const $tabPane = $button.closest('.tab-pane');
-      const $pre = $tabPane.find('.renderer-output');
-
-      if ($pre.length) {
-        const text = $pre.text();
-        navigator.clipboard.writeText(text).then(() => {
-          const originalText = $button.text();
-          $button.text('コピーしました！');
-          setTimeout(() => {
-            $button.text(originalText);
-          }, DynamicRenderer.COPY_FEEDBACK_DURATION);
-        });
-      }
+    // タブ切替時に表示/非表示を管理
+    $(this.element).on('shown.bs.tab', (e) => {
+      $tabContent.find('.tab-pane').addClass('d-none').removeClass('d-flex');
+      $(e.target.getAttribute('data-bs-target')).removeClass('d-none').addClass('d-flex');
     });
   }
 
   setConfiguration(templates) {
-    this.templates = templates;
+    this.templates = templates.map(template => DynamicTemplateConfiguration.create(template));
     this.buildUI();
   }
 
   render(formValues) {
-    const outputs = this.renderTemplates(this.templates, formValues);
-
+    console.log('render called with formValues:', formValues);
     this.templates.forEach((template, index) => {
-      const $pre = $(this.element).find(`pre[data-template-index="${index}"]`);
-      if ($pre.length) {
-        $pre.text(outputs[template.label]);
-      }
+      console.log(`Processing template ${index}:`, template);
+      const renderedContent = this.renderTemplate(template, formValues);
+      console.log(`Rendered content for template ${index}:`, renderedContent);
+      $(this.cardElement)
+        .find(`textarea[data-template-index="${index}"]`)
+        .val(renderedContent);
     });
   }
-
 }

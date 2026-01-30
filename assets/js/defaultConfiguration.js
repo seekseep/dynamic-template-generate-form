@@ -37,24 +37,24 @@ const defaultConfiguration = GeneratorConfiguration.create({
     {
       label: "標準テンプレート",
       sections: [
-        { label: "基本情報", condition: null, content: "【基本情報】\nお名前: {{name}}\nメールアドレス: {{email}}\n電話番号: {{phone}}\n" },
-        { label: "お問い合わせ内容", condition: null, content: "【お問い合わせ内容】\nカテゴリー: {{category}}\n件名: {{subject}}\nメッセージ:\n{{message}}\n" },
-        { label: "希望する連絡方法", condition: null, content: "【希望する連絡方法】\nご希望の連絡方法: {{contact_method}}\n" }
+        { label: "基本情報", condition: null, content: "【基本情報】\nお名前: {{お名前}}\nメールアドレス: {{メールアドレス}}\n電話番号: {{電話番号}}\n" },
+        { label: "お問い合わせ内容", condition: null, content: "【お問い合わせ内容】\nカテゴリー: {{カテゴリー}}\n件名: {{件名}}\nメッセージ:\n{{メッセージ}}\n" },
+        { label: "希望する連絡方法", condition: null, content: "【希望する連絡方法】\nご希望の連絡方法: {{ご希望の連絡方法}}\n" }
       ]
     },
     {
       label: "シンプル版",
       sections: [
-        { label: "基本情報", condition: null, content: "名前: {{name}}\nメール: {{email}}\n" },
-        { label: "お問い合わせ内容", condition: null, content: "件名: {{subject}}\n内容: {{message}}\n" }
+        { label: "基本情報", condition: null, content: "名前: {{お名前}}\nメール: {{メールアドレス}}\n" },
+        { label: "お問い合わせ内容", condition: null, content: "件名: {{件名}}\n内容: {{メッセージ}}\n" }
       ]
     },
     {
       label: "詳細版",
       sections: [
-        { label: "基本情報", condition: null, content: "=== 基本情報 ===\nお名前: {{name}}\nメールアドレス: {{email}}\n電話番号: {{phone}}\n" },
-        { label: "お問い合わせ内容", condition: null, content: "\n=== お問い合わせ内容 ===\nカテゴリー: {{category}}\n件名: {{subject}}\n\nメッセージ:\n{{message}}\n" },
-        { label: "希望する連絡方法", condition: null, content: "\n=== 連絡先 ===\nご希望の連絡方法: {{contact_method}}\n" }
+        { label: "基本情報", condition: null, content: "=== 基本情報 ===\nお名前: {{お名前}}\nメールアドレス: {{メールアドレス}}\n電話番号: {{電話番号}}\n" },
+        { label: "お問い合わせ内容", condition: null, content: "\n=== お問い合わせ内容 ===\nカテゴリー: {{カテゴリー}}\n件名: {{件名}}\n\nメッセージ:\n{{メッセージ}}\n" },
+        { label: "希望する連絡方法", condition: null, content: "\n=== 連絡先 ===\nご希望の連絡方法: {{ご希望の連絡方法}}\n" }
       ]
     }
   ]
